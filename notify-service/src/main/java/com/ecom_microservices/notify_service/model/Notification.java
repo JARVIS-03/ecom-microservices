@@ -1,43 +1,67 @@
-
 package com.ecom_microservices.notify_service.model;
 
+
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "notifications")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "notifications")
+@Builder
 public class Notification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long notificationId;
+    private Long id;
+
+    @NotBlank(message = "Recipient must not be empty")
+    @Email(message = "Invalid email format") // Valid only for EMAIL type
+    @Column(nullable = false)
     private String recipient;
+
+    @NotBlank(message = "Message content must not be empty")
+    @Size(max = 1000, message = "Message content must be at most 1000 characters")
+    @Column(name = "message_content", nullable = false, length = 1000)
     private String messageContent;
+
+    @NotNull(message = "Priority must be specified")
     @Enumerated(EnumType.STRING)
-    private NotificationType notificationType;
+    @Column(nullable = false)
+    private PriorityLevel priority;
+
+    @NotNull(message = "Status must be specified")
     @Enumerated(EnumType.STRING)
-    private Priority priority;
+    @Column(nullable = false)
+    private NotificationStatus status;
+
+    @NotNull(message = "Notification type must be specified")
     @Enumerated(EnumType.STRING)
-    private Status status;
+    @Column(name = "notification_type", nullable = false)
+    private NotificationType type = NotificationType.EMAIL;
+
+    @Future(message = "Scheduled time must be in the future")
+    @Column(name = "scheduled_time")
     private LocalDateTime scheduledTime;
+
+    @Column(name = "created_timestamp", nullable = false, updatable = false)
     private LocalDateTime createdTimestamp;
+
+    @Column(name = "updated_timestamp")
     private LocalDateTime updatedTimestamp;
 
-
-
-    public enum NotificationType {
-        EMAIL, SMS, PUSH
+    @PrePersist
+    protected void onCreate() {
+        createdTimestamp = LocalDateTime.now();
+        updatedTimestamp = createdTimestamp;
     }
-    public enum Priority {
-        HIGH, MEDIUM, LOW
-    }
-    public enum Status {
-        PENDING, SENT, RETRIED
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedTimestamp = LocalDateTime.now();
     }
 }
-
