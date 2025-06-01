@@ -1,15 +1,18 @@
 package com.ecom_microservices.notify_service.model;
 
 
+
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.enums.NotificationType;
 import com.ecom_microservices.notify_service.enums.PriorityLevel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotBlank;
+
 
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "notifications")
 @Data
