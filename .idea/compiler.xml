@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="notify-service" />
         <module name="service-registry" />
+
       </profile>
     </annotationProcessing>
   </component>
