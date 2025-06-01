@@ -1,6 +1,9 @@
 package com.ecom_microservices.notify_service.model;
 
 
+import com.ecom_microservices.notify_service.enums.NotificationStatus;
+import com.ecom_microservices.notify_service.enums.NotificationType;
+import com.ecom_microservices.notify_service.enums.PriorityLevel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;

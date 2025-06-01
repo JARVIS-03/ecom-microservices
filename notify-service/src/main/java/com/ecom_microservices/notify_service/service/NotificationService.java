@@ -1,5 +1,6 @@
 package com.ecom_microservices.notify_service.service;
 
+import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,17 @@ public class NotificationService {
         this.notificationRepository = notificationRepository;
     }
 
-    public List<Notification> getNotifications(String recipient, Notification.Status status, LocalDateTime startDate, LocalDateTime endDate) {
-        return notificationRepository.findByFilters(recipient, status, startDate, endDate);
+
+
+    public List<Notification> getNotificationsByStatus(NotificationStatus status) {
+        return notificationRepository.findByStatus(status);
+    }
+
+    public List<Notification> getNotificationsByRecipient(String recipient) {
+        return notificationRepository.findByRecipient(recipient);
+    }
+
+    public List<Notification> getNotificationsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        return notificationRepository.findByCreatedTimestampBetween(startDate, endDate);
     }
 }
-
-
