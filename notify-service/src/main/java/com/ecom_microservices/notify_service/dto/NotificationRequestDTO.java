@@ -1,10 +1,11 @@
 package com.ecom_microservices.notify_service.dto;
 
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+
+import java.time.OffsetDateTime;
 
 @Data
 @NoArgsConstructor
@@ -25,5 +26,5 @@ public class NotificationRequestDTO {
     @NotBlank(message = "Priority is required")
     private String priority;
 
-    private String scheduledTime;
+
 }
