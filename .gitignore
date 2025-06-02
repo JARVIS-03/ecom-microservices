@@ -1,0 +1,6 @@
+# Ignore IntelliJ IDEA project settings
+.idea/
+
+# Ignore build output
+/target/
+/out/
