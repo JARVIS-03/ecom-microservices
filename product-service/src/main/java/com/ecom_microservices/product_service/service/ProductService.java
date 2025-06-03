@@ -58,4 +58,36 @@ public class ProductService {
         }
         return productRepository.findByCategory(category);
     }
+      @Transactional
+    public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
+        validateProductRequest(productRequest);
+
+        Product existingProduct = productRepository.findByProductId(productId)
+                .orElseThrow(() -> new ProductNotFoundException(
+                        "Product not found with ID: " + productId
+                ));
+
+        updateProductDetails(existingProduct, productRequest);
+        Product updatedProduct = productRepository.save(existingProduct);
+
+        log.info("Product updated successfully with ID: {}", productId);
+        return mapToProductResponse(updatedProduct);
+    }
+     @Transactional
+    public ProductResponse createProduct(ProductRequest productRequest) {
+        validateProductRequest(productRequest);
+
+        if (productRepository.existsByProductId(productRequest.getProductId())) {
+            throw new ValidationException(
+                    "Product with ID " + productRequest.getProductId() + " already exists"
+            );
+        }
+
+        Product product = mapToProduct(productRequest);
+        product = productRepository.save(product);
+
+        log.info("Product created successfully with ID: {}", product.getProductId());
+        return mapToProductResponse(product);
+    }
+    
 }
