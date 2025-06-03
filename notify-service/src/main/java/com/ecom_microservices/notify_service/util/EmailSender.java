@@ -31,7 +31,7 @@ public class EmailSender {
 	
 	@Retryable(
 			maxAttempts = 3,
-			backoff = @Backoff(delay = 2000)) // Retry 3 times with delay of 2000ms between each attempt
+			backoff = @Backoff(delay = 2000))
 	public void send(Notification notification) {
 		logger.info("Trying to send notification with id: "+notification.getId());
 		 try {
@@ -44,8 +44,7 @@ public class EmailSender {
 	            logger.info("Notification(Email) sent successfully for id: "+notification.getId());
 	            notification.setStatus(NotificationStatus.SENT);
 	            notificationRepository.save(notification);
-
-	        }
+		 }
 		 catch (Exception ex) {
 	            logger.warn("Attempt to send email for id: "+notification.getId()+" FAILED");
 	            notification.setStatus(NotificationStatus.RETRIED);
@@ -53,7 +52,6 @@ public class EmailSender {
 	            throw ex;
 	        }
 	    }
-
 	    @Recover
 	    public void recover(Exception ex, Notification notification) {
 	        logger.warn("Failed to send after retries. Marking as FAILED for id: " + notification.getId());

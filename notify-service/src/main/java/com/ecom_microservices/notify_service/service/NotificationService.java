@@ -53,6 +53,10 @@ public class NotificationService {
         logger.debug("Fetched {} notifications with status {}", notifications.size(), status);
         return notifications;
     }
+    public Notification getNotificationById(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
 
     public List<Notification> getNotificationsByRecipient(String recipient) {
         logger.info("Fetching notifications for recipient: {}", recipient);
