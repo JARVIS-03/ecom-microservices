@@ -2,22 +2,22 @@ package com.ecom.payment.paymentservice.service;
 
 import com.ecom.payment.paymentservice.dto.PaymentRequestDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
+import com.ecom.payment.paymentservice.mapper.PaymentRequestDTOtoPaymentMapper;
 import com.ecom.payment.paymentservice.model.Payment;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
 import com.ecom.payment.paymentservice.utillity.PaymentConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
+import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 public class PaymentServiceImpl implements PaymentService {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PaymentService.class);
 
     @Autowired
     private PaymentRepository paymentRepository;
@@ -34,12 +34,8 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDTO initiatePayment(PaymentRequestDTO dto) {
         log.info("Initiating payment for orderId: {}", dto.getOrderId());
 
-        Payment payment = new Payment();
-        payment.setOrderId(dto.getOrderId());
-        payment.setAmount(dto.getAmount());
-        payment.setPaymentMethod(dto.getPaymentMethod());
+        Payment payment = PaymentRequestDTOtoPaymentMapper.INSTANCE.map(dto);
         payment.setStatus("INITIATED");
-        payment.setDate(LocalDateTime.now());
 
         try {
             String methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
