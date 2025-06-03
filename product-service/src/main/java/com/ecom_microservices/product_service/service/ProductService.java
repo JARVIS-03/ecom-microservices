@@ -47,4 +47,15 @@ public class ProductService {
                 .available(product.isAvailable())
                 .build();
     }
+    @Transactional(readOnly = true)
+    public List<Product> searchProductsByName(String keyword) {
+        return productRepository.findByNameContainingIgnoreCase(keyword);
+    }
+    @Transactional(readOnly = true)
+    public List<Product> getProductsByCategory(String category) {
+        if (!ALLOWED_CATEGORIES.contains(category)) {
+            throw new InvalidCategoryException(category);
+        }
+        return productRepository.findByCategory(category);
+    }
 }
