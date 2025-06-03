@@ -80,11 +80,6 @@ public class PaymentValidator {
 
         }
 
-        private static boolean validatePaypal(PaypalDTO pp) {
-            if (!matchesRegex(pp.getPaypalEmail(), "^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) throw new PaymentProcessingException("Invalid PayPal Email");
-            return true;
-        }
-
     private static boolean matchesRegex(String value, String regex) {
         return value != null && Pattern.matches(regex, value);
     }
