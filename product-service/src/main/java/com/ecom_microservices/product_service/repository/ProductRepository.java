@@ -5,10 +5,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByProductId(String productId);
     boolean existsByProductId(String productId);
     void deleteByProductId(String productId);
+     List<Product> findByCategory(String category);
+    List<Product> findByAvailableTrue();
 }
