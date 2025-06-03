@@ -48,7 +48,7 @@ public class ProductService {
         log.info("Product found with ID: {}", productId);
         return mapToProductResponse(product);
     }
-
+//
 //    public List<Product> getAllProducts() {
 //        return this.productRepository.findAll();
 //    }
