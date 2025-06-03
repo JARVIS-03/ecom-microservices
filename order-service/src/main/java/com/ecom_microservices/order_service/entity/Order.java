@@ -1,6 +1,6 @@
 package com.ecom_microservices.order_service.entity;
 
-import com.ecommerce.orderservice.enums.OrderStatus;
+import com.ecom_microservices.order_service.enums.OrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;

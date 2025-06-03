@@ -1,6 +1,6 @@
 package com.ecom_microservices.order_service.exception;
 
-import com.ecommerce.orderservice.dto.response.ErrorResponse;
+import com.ecom_microservices.order_service.dto.response.ErrorResponse;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

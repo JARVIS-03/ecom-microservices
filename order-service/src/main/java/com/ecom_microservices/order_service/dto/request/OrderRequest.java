@@ -1,6 +1,6 @@
 package com.ecom_microservices.order_service.dto.request;
 
-import com.ecommerce.orderservice.entity.OrderItem;
+import com.ecom_microservices.order_service.entity.OrderItem;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
