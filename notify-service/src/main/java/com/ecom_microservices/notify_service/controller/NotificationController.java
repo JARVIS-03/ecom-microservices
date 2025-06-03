@@ -41,15 +41,10 @@ public class NotificationController {
     @GetMapping("/{id}/status")
     public ResponseEntity<String> getNotificationStatusById(@PathVariable Long id) {
         logger.info("GET /api/notifications/{}/status - Fetching notification status", id);
-        Notification notification = service.getNotificationById(id);
-        if (notification == null) {
-            logger.warn("Notification with ID {} not found", id);
-            return ResponseEntity.notFound().build();
-        }
+        Notification notification = service.getNotificationById(id); // will throw if not found
         logger.info("Notification status for ID {} is '{}'", id, notification.getStatus());
         return ResponseEntity.ok(notification.getStatus().name());
     }
-
 
 
     @GetMapping("/status/{status}")

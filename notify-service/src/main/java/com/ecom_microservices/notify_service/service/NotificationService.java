@@ -3,6 +3,7 @@ package com.ecom_microservices.notify_service.service;
 import com.ecom_microservices.notify_service.dto.NotificationRequestDTO;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
+import com.ecom_microservices.notify_service.exception.NotificationNotFoundException;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.repository.NotificationRepository;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -54,8 +56,15 @@ public class NotificationService {
         return notifications;
     }
     public Notification getNotificationById(Long id) {
-        return repository.findById(id).orElse(null);
+        Optional<Notification> opt = repository.findById(id);
+        if (opt.isEmpty()) {
+            logger.warn("Notification not found for ID: {}", id);
+
+            throw new NotificationNotFoundException("Notification not found with ID: " + id);
+        }
+        return opt.get();
     }
+
 
 
     public List<Notification> getNotificationsByRecipient(String recipient) {
