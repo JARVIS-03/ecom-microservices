@@ -8,10 +8,10 @@ import com.ecom_microservices.product_service.exception.ProductNotFoundException
 import com.ecom_microservices.product_service.exception.ValidationException;
 import com.ecom_microservices.product_service.model.Product;
 import com.ecom_microservices.product_service.repository.ProductRepository;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,8 +49,33 @@ public class ProductService {
         return mapToProductResponse(product);
     }
 
+//    public List<Product> getAllProducts() {
+//        return this.productRepository.findAll();
+//    }
+
+    @Retryable(
+            value = { RuntimeException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000)
+    )
     public List<Product> getAllProducts() {
-        return this.productRepository.findAll();
+        log.debug("Fetching all products from the repository...");
+
+        List<Product> products = productRepository.findAll();
+
+        if (products == null || products.isEmpty()) {
+            log.warn("Product list is empty, triggering retry...");
+            throw new RuntimeException("Product list is empty, retrying...");
+        }
+
+        log.info("Successfully fetched {} products.", products.size());
+        return products;
+    }
+
+    @Recover
+    public List<Product> recover(RuntimeException e) {
+        log.error("Retries exhausted for getAllProducts(): {}", e.getMessage());
+        return List.of();
     }
 
 
@@ -63,6 +88,9 @@ public class ProductService {
                 .available(product.isAvailable())
                 .build();
     }
+
+
+
     @Transactional(readOnly = true)
     public List<Product> searchProductsByName(String keyword) {
         return productRepository.findByNameContainingIgnoreCase(keyword);
