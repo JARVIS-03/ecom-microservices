@@ -15,4 +15,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     void deleteByProductId(String productId);
      List<Product> findByCategory(String category);
     List<Product> findByAvailableTrue();
+    List<Product> findByNameContainingIgnoreCase(String keyword);
 }

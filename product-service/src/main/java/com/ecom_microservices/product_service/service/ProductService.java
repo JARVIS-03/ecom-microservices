@@ -1,22 +1,34 @@
 package com.ecom_microservices.product_service.service;
 
 
+import com.ecom_microservices.product_service.dto.ProductRequest;
 import com.ecom_microservices.product_service.dto.ProductResponse;
+import com.ecom_microservices.product_service.exception.InvalidCategoryException;
 import com.ecom_microservices.product_service.exception.ProductNotFoundException;
+import com.ecom_microservices.product_service.exception.ValidationException;
 import com.ecom_microservices.product_service.model.Product;
 import com.ecom_microservices.product_service.repository.ProductRepository;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
+@Service
+@Slf4j
 public class ProductService {
-
 
     @Autowired
     private ProductRepository productRepository;
+
+    private static final List<String> ALLOWED_CATEGORIES = Arrays.asList(
+            "Electronics", "Books", "Clothing", "Home"
+    );
 
     @Retryable(
             maxAttempts = 3,
@@ -25,11 +37,15 @@ public class ProductService {
     )
     @Transactional(readOnly = true)
     public ProductResponse getProductById(String productId) {
-        Product product = productRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException(
-                        "Product not found with ID: " + productId
-                ));
+        log.debug("Attempting to fetch product with ID: {}", productId);
 
+        Product product = productRepository.findByProductId(productId)
+                .orElseThrow(() -> {
+                    log.warn("Product not found with ID: {}", productId);
+                    return new ProductNotFoundException("Product not found with ID: " + productId);
+                });
+
+        log.info("Product found with ID: {}", productId);
         return mapToProductResponse(product);
     }
 
@@ -89,5 +105,31 @@ public class ProductService {
         log.info("Product created successfully with ID: {}", product.getProductId());
         return mapToProductResponse(product);
     }
+    private void validateProductRequest(ProductRequest request) {
+        if (!request.getAvailable()) {
+            throw new ValidationException("Product must be available to be saved");
+        }
+
+        if (!ALLOWED_CATEGORIES.contains(request.getCategory())) {
+            throw new InvalidCategoryException(request.getCategory());
+        }
+    }
+    private Product mapToProduct(ProductRequest request) {
+        return Product.builder()
+                .productId(request.getProductId())
+                .name(request.getName())
+                .price(request.getPrice())
+                .category(request.getCategory())
+                .available(request.getAvailable())
+                .build();
+    }
+
+    private void updateProductDetails(Product product, ProductRequest request) {
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setCategory(request.getCategory());
+        product.setAvailable(request.getAvailable());
+    }
+
     
 }

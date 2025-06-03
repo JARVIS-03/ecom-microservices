@@ -1,6 +1,4 @@
-package com.product.product_service.dto;
-
-
+package com.ecom_microservices.product_service.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,7 +1,5 @@
 package com.ecom_microservices.product_service.dto;
 
-
-
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

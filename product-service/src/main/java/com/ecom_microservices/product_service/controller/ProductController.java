@@ -1,10 +1,13 @@
 package com.ecom_microservices.product_service.controller;
 
 
+import com.ecom_microservices.product_service.dto.ProductRequest;
 import com.ecom_microservices.product_service.dto.ProductResponse;
 import com.ecom_microservices.product_service.model.Product;
 import com.ecom_microservices.product_service.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,9 +47,10 @@ public class ProductController {
         List<Product> products = productService.getProductsByCategory(category);
         return ResponseEntity.ok(products);
     }
-    @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProductsByName(@RequestParam String keyword) {
+    @GetMapping("/search/{keyword}")
+    public ResponseEntity<List<Product>> searchProductsByName(@PathVariable String keyword) {
         List<Product> products = productService.searchProductsByName(keyword);
         return ResponseEntity.ok(products);
     }
+
 }
