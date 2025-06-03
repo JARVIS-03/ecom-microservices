@@ -2,26 +2,33 @@ package com.ecom_microservices.notify_service.service;
 
 import com.ecom_microservices.notify_service.dto.NotificationRequestDTO;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
+import com.ecom_microservices.notify_service.dto.OrderDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
-import com.ecom_microservices.notify_service.exception.NotificationNotFoundException;
+import com.ecom_microservices.notify_service.enums.NotificationType;
+import com.ecom_microservices.notify_service.enums.OrderStatus;
+import com.ecom_microservices.notify_service.enums.PriorityLevel;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.repository.NotificationRepository;
+import com.ecom_microservices.notify_service.util.EmailSender;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class NotificationService {
     private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
     private final NotificationRepository repository;
+    
+    private final EmailSender emailSender;
 
-    public NotificationService(NotificationRepository repository) {
+    public NotificationService(NotificationRepository repository, EmailSender emailSender) {
         this.repository = repository;
+        this.emailSender = emailSender;
     }
 
     public NotificationResponseDTO createNotification(NotificationRequestDTO requestDTO) {
@@ -48,6 +55,53 @@ public class NotificationService {
                 saved.getUpdatedTimestamp()
         );
     }
+    
+    public NotificationResponseDTO createNotification(OrderDTO orderDTO) {
+        logger.info("Creating notification for recipient: {}", orderDTO.getUserEmail());
+
+        OrderStatus status = orderDTO.getStatus(); // now this is an enum
+        String message;
+
+        switch (status) {
+            case SHIPPED:
+                message = "Order shipped successfully, please be available";
+                break;
+            case DELIVERED:
+                message = "Order successfully delivered";
+                break;
+            default:
+                message = "Order is in " + status.name() + " state";
+                break;
+        }
+
+        Notification notification = Notification.builder()
+                .recipient(orderDTO.getUserEmail())
+                .messageContent(message)
+                .type(NotificationType.EMAIL) // set properly
+                .priority(status == OrderStatus.DELIVERED ? PriorityLevel.HIGH : PriorityLevel.LOW)
+                .status(NotificationStatus.PENDING)
+                .scheduledTime(status != OrderStatus.DELIVERED ? LocalDateTime.now().plusMinutes(5) : null)
+                .build();
+
+        Notification saved = repository.save(notification);
+        logger.debug("Notification saved with ID: {}", saved.getId());
+
+        if (saved.getPriority() == PriorityLevel.HIGH) {
+            emailSender.send(saved);
+        }
+
+        return new NotificationResponseDTO(
+                saved.getId(),
+                saved.getRecipient(),
+                saved.getMessageContent(),
+                saved.getType().name(),
+                saved.getPriority().name(),
+                saved.getStatus().name(),
+                saved.getCreatedTimestamp(),
+                saved.getUpdatedTimestamp()
+        );
+    }
+
 
     public List<Notification> getNotificationsByStatus(NotificationStatus status) {
         logger.info("Fetching notifications with status: {}", status);
@@ -55,17 +109,6 @@ public class NotificationService {
         logger.debug("Fetched {} notifications with status {}", notifications.size(), status);
         return notifications;
     }
-    public Notification getNotificationById(Long id) {
-        Optional<Notification> opt = repository.findById(id);
-        if (opt.isEmpty()) {
-            logger.warn("Notification not found for ID: {}", id);
-
-            throw new NotificationNotFoundException("Notification not found with ID: " + id);
-        }
-        return opt.get();
-    }
-
-
 
     public List<Notification> getNotificationsByRecipient(String recipient) {
         logger.info("Fetching notifications for recipient: {}", recipient);

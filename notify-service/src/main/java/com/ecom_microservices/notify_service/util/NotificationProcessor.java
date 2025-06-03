@@ -1,5 +1,6 @@
 package com.ecom_microservices.notify_service.util;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -43,5 +44,25 @@ public class NotificationProcessor {
         }
     }
 	
+    @Scheduled(fixedRate = 10000)
+    public void checkAndSendScheduledNotifications() {
+        logger.info("Running scheduled job to check for due notifications...");
+
+        LocalDateTime now = LocalDateTime.now();
+        List<Notification> dueNotifications = repository.findDueNotifications(now, NotificationStatus.PENDING);
+
+        for (Notification notification : dueNotifications) {
+            try {
+                emailSender.send(notification);  // ✅ Corrected here too
+                notification.setStatus(NotificationStatus.SENT);
+                notification.setUpdatedTimestamp(LocalDateTime.now());
+                repository.save(notification);
+
+                logger.info("Notification sent and updated for recipient: {}", notification.getRecipient());
+            } catch (Exception e) {
+                logger.error("Failed to send notification for recipient {}: {}", notification.getRecipient(), e.getMessage());
+            }
+        }
+    }
 	
 }
