@@ -2,6 +2,7 @@ package com.ecom_microservices.notify_service.controller;
 
 import com.ecom_microservices.notify_service.dto.NotificationRequestDTO;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
+import com.ecom_microservices.notify_service.dto.OrderDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.service.NotificationService;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
-
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -33,11 +32,18 @@ public class NotificationController {
 
     @PostMapping("/send")
     public ResponseEntity<NotificationResponseDTO> sendNotification(@Valid @RequestBody NotificationRequestDTO requestDTO) {
-        logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
+    	logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
         NotificationResponseDTO responseDTO = service.createNotification(requestDTO);
         logger.info("Notification sent successfully with ID {}", responseDTO.getId());
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
+    
+    @PostMapping("/order/send")
+    public ResponseEntity<NotificationResponseDTO> sendOrderStatusNotification(@Valid @RequestBody OrderDTO orderDTO) {
+        NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
+    }
+    
     @GetMapping("/{id}/status")
     public ResponseEntity<String> getNotificationStatusById(@PathVariable Long id) {
         logger.info("GET /api/notifications/{}/status - Fetching notification status", id);
@@ -74,7 +80,6 @@ public class NotificationController {
 
     // New GET endpoint: By Recipient
     @GetMapping("/recipient/{recipient}")
-
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByRecipient(@PathVariable String recipient) {
         logger.info("Received request to fetch notifications for recipient: {}", recipient);
         List<Notification> notifications = service.getNotificationsByRecipient(recipient);

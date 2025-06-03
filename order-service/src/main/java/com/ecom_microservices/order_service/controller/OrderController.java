@@ -1,8 +1,8 @@
-package com.ecommerce.orderservice.controller;
+package com.ecom_microservices.order_service.controller;
 
-import com.ecommerce.orderservice.dto.request.OrderRequest;
-import com.ecommerce.orderservice.dto.response.OrderResponse;
-import com.ecommerce.orderservice.service.OrderService;
+import com.ecom_microservices.order_service.dto.request.OrderRequest;
+import com.ecom_microservices.order_service.dto.response.OrderResponse;
+import com.ecom_microservices.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

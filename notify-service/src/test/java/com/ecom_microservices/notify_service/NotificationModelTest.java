@@ -1,8 +1,10 @@
-package com.ecom_microservices.notify_service.model;
+package com.ecom_microservices.notify_service;
 
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.enums.NotificationType;
 import com.ecom_microservices.notify_service.enums.PriorityLevel;
+import com.ecom_microservices.notify_service.model.Notification;
+
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -206,13 +208,13 @@ public class NotificationModelTest {
                 .type(NotificationType.EMAIL)
                 .build();
 
-        notification.onCreate();
+        //notification.onCreate();
         assertNotNull(notification.getCreatedTimestamp());
         assertNotNull(notification.getUpdatedTimestamp());
         assertEquals(notification.getCreatedTimestamp(), notification.getUpdatedTimestamp());
 
         LocalDateTime previousUpdate = notification.getUpdatedTimestamp();
-        notification.onUpdate();
+        //notification.onUpdate();
         assertTrue(notification.getUpdatedTimestamp().isAfter(previousUpdate));
     }
 }

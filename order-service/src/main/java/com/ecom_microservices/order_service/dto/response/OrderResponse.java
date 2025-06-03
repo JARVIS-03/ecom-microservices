@@ -1,7 +1,7 @@
 package com.ecom_microservices.order_service.dto.response;
 
-import com.ecommerce.orderservice.entity.OrderItem;
-import com.ecommerce.orderservice.enums.OrderStatus;
+import com.ecom_microservices.order_service.entity.OrderItem;
+import com.ecom_microservices.order_service.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

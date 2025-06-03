@@ -1,7 +1,7 @@
-package com.ecommerce.orderservice.service;
+package com.ecom_microservices.order_service.service;
 
-import com.ecommerce.orderservice.dto.request.OrderRequest;
-import com.ecommerce.orderservice.dto.response.OrderResponse;
+import com.ecom_microservices.order_service.dto.request.OrderRequest;
+import com.ecom_microservices.order_service.dto.response.OrderResponse;
 
 import java.util.List;
 import java.util.UUID;

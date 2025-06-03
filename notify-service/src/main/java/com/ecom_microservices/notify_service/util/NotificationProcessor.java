@@ -1,5 +1,6 @@
 package com.ecom_microservices.notify_service.util;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,7 +27,12 @@ public class NotificationProcessor {
     private EmailSender emailSender;
 
     @Scheduled(fixedDelay = 10000)
-    public void processPendingNotifications() {
+    public void processScheduledJobs() {
+    	processPendingNotifications();
+    	processScheduledNotifications();
+    }
+    
+    private void processPendingNotifications() {
     	Pageable page = PageRequest.of(0, 10);
         List<Notification> pending = repository.findNotificationByStatusOrderByPriority(NotificationStatus.PENDING, page);
         logger.info("Notification Processor Started at " + System.currentTimeMillis() + ": Total pending notifications are "+pending.size());
@@ -43,5 +49,19 @@ public class NotificationProcessor {
         }
     }
 	
+    private void processScheduledNotifications() {
+        logger.info("Running scheduled job to check for due notifications...");
+
+        LocalDateTime now = LocalDateTime.now();
+        List<Notification> dueNotifications = repository.findPendingScheduledNotifications(now, NotificationStatus.PENDING);
+
+        for (Notification notification : dueNotifications) {
+            try {
+                emailSender.send(notification);
+           } catch (Exception e) {
+                logger.error("Failed to send notification for recipient {}: {}", notification.getRecipient(), e.getMessage());
+            }
+        }
+    }
 	
 }

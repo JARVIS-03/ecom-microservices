@@ -1,14 +1,14 @@
-package com.ecommerce.orderservice.service.impl;
+package com.ecom_microservices.order_service.service.impl;
 
-import com.ecommerce.orderservice.dto.request.OrderRequest;
-import com.ecommerce.orderservice.dto.response.OrderResponse;
-import com.ecommerce.orderservice.entity.Order;
-import com.ecommerce.orderservice.entity.OrderItem;
-import com.ecommerce.orderservice.enums.OrderStatus;
-import com.ecommerce.orderservice.exception.InvalidOrderStatusException;
-import com.ecommerce.orderservice.exception.ResourceNotFoundException;
-import com.ecommerce.orderservice.repository.OrderRepository;
-import com.ecommerce.orderservice.service.OrderService;
+import com.ecom_microservices.order_service.dto.request.OrderRequest;
+import com.ecom_microservices.order_service.dto.response.OrderResponse;
+import com.ecom_microservices.order_service.entity.Order;
+import com.ecom_microservices.order_service.entity.OrderItem;
+import com.ecom_microservices.order_service.enums.OrderStatus;
+import com.ecom_microservices.order_service.exception.InvalidOrderStatusException;
+import com.ecom_microservices.order_service.exception.ResourceNotFoundException;
+import com.ecom_microservices.order_service.repository.OrderRepository;
+import com.ecom_microservices.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
