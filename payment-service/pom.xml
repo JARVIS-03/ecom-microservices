@@ -11,7 +11,7 @@
 	<groupId>com.ecom.payment</groupId>
 	<artifactId>paymentservice</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>paymentservice</name>
+	<name>payment-service</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
