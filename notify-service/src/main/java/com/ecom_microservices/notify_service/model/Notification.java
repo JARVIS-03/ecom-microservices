@@ -6,11 +6,12 @@ import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.enums.NotificationType;
 import com.ecom_microservices.notify_service.enums.PriorityLevel;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.validator.constraints.Email;
+
 import org.hibernate.validator.constraints.NotBlank;
 
 
@@ -52,7 +53,7 @@ public class Notification {
     @Column(name = "notification_type", nullable = false)
     private NotificationType type = NotificationType.EMAIL;
 
-    @Future(message = "Scheduled time must be in the future")
+    //@Future(message = "Scheduled time must be in the future")
     @Column(name = "scheduled_time")
     private LocalDateTime scheduledTime;
 

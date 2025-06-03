@@ -27,7 +27,12 @@ public class NotificationProcessor {
     private EmailSender emailSender;
 
     @Scheduled(fixedDelay = 10000)
-    public void processPendingNotifications() {
+    public void processScheduledJobs() {
+    	processPendingNotifications();
+    	processScheduledNotifications();
+    }
+    
+    private void processPendingNotifications() {
     	Pageable page = PageRequest.of(0, 10);
         List<Notification> pending = repository.findNotificationByStatusOrderByPriority(NotificationStatus.PENDING, page);
         logger.info("Notification Processor Started at " + System.currentTimeMillis() + ": Total pending notifications are "+pending.size());
@@ -44,22 +49,16 @@ public class NotificationProcessor {
         }
     }
 	
-    @Scheduled(fixedRate = 10000)
-    public void checkAndSendScheduledNotifications() {
+    private void processScheduledNotifications() {
         logger.info("Running scheduled job to check for due notifications...");
 
         LocalDateTime now = LocalDateTime.now();
-        List<Notification> dueNotifications = repository.findDueNotifications(now, NotificationStatus.PENDING);
+        List<Notification> dueNotifications = repository.findPendingScheduledNotifications(now, NotificationStatus.PENDING);
 
         for (Notification notification : dueNotifications) {
             try {
-                emailSender.send(notification);  // ✅ Corrected here too
-                notification.setStatus(NotificationStatus.SENT);
-                notification.setUpdatedTimestamp(LocalDateTime.now());
-                repository.save(notification);
-
-                logger.info("Notification sent and updated for recipient: {}", notification.getRecipient());
-            } catch (Exception e) {
+                emailSender.send(notification);
+           } catch (Exception e) {
                 logger.error("Failed to send notification for recipient {}: {}", notification.getRecipient(), e.getMessage());
             }
         }

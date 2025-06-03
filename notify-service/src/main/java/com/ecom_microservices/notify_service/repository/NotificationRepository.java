@@ -20,7 +20,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByRecipient(String recipient);
     List<Notification> findByCreatedTimestampBetween(LocalDateTime startDate, LocalDateTime endDate);
     
-    @Query(value = "SELECT n FROM Notification n WHERE n.status = :status AND n.scheduledTime IS NULL " +
+    @Query(value = "SELECT n FROM Notification n WHERE n.status = :status " +
+    		"AND n.scheduledTime IS NULL " +
             "ORDER BY CASE n.priority " +
             "WHEN 'HIGH' THEN 1 " +
             "WHEN 'MEDIUM' THEN 2 " +
@@ -28,7 +29,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
             "n.createdTimestamp ASC")
     List<Notification> findNotificationByStatusOrderByPriority(@Param("status") NotificationStatus status, Pageable pageable);
 
-
     @Query("SELECT n FROM Notification n WHERE n.status = :status AND n.scheduledTime < :now")
-    List<Notification> findDueNotifications(@Param("now") LocalDateTime now, @Param("status") NotificationStatus status);
+    List<Notification> findPendingScheduledNotifications(@Param("now") LocalDateTime now, @Param("status") NotificationStatus status);
+
 }
