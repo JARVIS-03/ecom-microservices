@@ -1,13 +1,10 @@
 package com.ecom_microservices.product_service.controller;
 
 
-import com.product.product_service.dto.ProductRequest;
-import com.product.product_service.dto.ProductResponse;
-import com.product.product_service.model.Product;
-import com.product.product_service.service.ProductService;
-import jakarta.validation.Valid;
+import com.ecom_microservices.product_service.dto.ProductResponse;
+import com.ecom_microservices.product_service.model.Product;
+import com.ecom_microservices.product_service.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
