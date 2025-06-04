@@ -36,11 +36,7 @@ public class PaymentController {
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<PaymentResponseDTO>> getByOrderId(@PathVariable String orderId) {
-        RequestValidator.validateRequestParam(orderId);
-        return new ResponseEntity<>(paymentService.getPaymentsByOrderId(orderId), HttpStatus.OK);
-    }
+
 
     @PutMapping("/{id}/{status}")
     public ResponseEntity<PaymentResponseDTO> paymentStatusUpdate(
@@ -57,6 +53,14 @@ public class PaymentController {
     public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable String orderId) {
         PaymentResponseDTO refundedPayment = paymentService.refundPayment(orderId);
         return ResponseEntity.ok(refundedPayment);
+    }
+
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<List<PaymentResponseDTO>> getByOrderId(@PathVariable String orderId) {
+        log.info("Fetching all payments for Order ID: {}", orderId);
+        List<PaymentResponseDTO> payments = paymentService.getPaymentsByOrderId(orderId);
+        log.info("Total {} payments found for Order ID: {}", payments.size(), orderId);
+        return new ResponseEntity<>(payments, HttpStatus.OK);
     }
 
 }

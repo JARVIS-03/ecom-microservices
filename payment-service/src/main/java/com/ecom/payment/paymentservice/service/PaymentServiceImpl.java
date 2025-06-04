@@ -122,9 +122,11 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
     public List<PaymentResponseDTO> getPaymentsByOrderId(String orderId) {
-        return paymentRepository.findByOrderId(orderId)
-                .stream()
+        log.info("Fetching all payments for Order ID: {}", orderId);
+
+        return paymentRepository.findByOrderId(orderId).stream()
                 .map(paymentConverter::toDTO)
                 .collect(Collectors.toList());
     }
