@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -137,16 +138,22 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<Product> getProductsByPriceRange(double minPrice, double maxPrice) {
+    public List<ProductResponse> getProductsByPriceRange(double minPrice, double maxPrice) {
         log.debug("Fetching products with price between {} and {}", minPrice, maxPrice);
-        return productRepository.findByPriceBetween(minPrice, maxPrice);
+        
+        List<Product> productList = productRepository.findByPriceBetween(minPrice, maxPrice);
+        
+        return productList.stream().map(product -> mapToProductResponse(product)).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Page<Product> getPaginatedProducts(int page, int size) {
+    public List<ProductResponse> getPaginatedProducts(int page, int size) {
         log.debug("Fetching paginated products with page: {}, size: {}", page, size);
+        
         Pageable pageable = PageRequest.of(page, size);
-        return productRepository.findAll(pageable);
+        Page<Product> productPage = productRepository.findAll(pageable);
+        
+        return productPage.getContent().stream().map(product -> mapToProductResponse(product)).collect(Collectors.toList());
     }
 
     private void validateProductRequest(ProductRequest request) {

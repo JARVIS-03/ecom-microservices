@@ -4,12 +4,13 @@ import com.ecom_microservices.product_service.dto.ProductRequest;
 import com.ecom_microservices.product_service.dto.ProductResponse;
 import com.ecom_microservices.product_service.model.Product;
 import com.ecom_microservices.product_service.service.ProductService;
+import com.ecom_microservices.product_service.exception.ValidationException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -83,21 +84,31 @@ public class ProductController {
     }
 
     @GetMapping("/price-range")
-    public ResponseEntity<List<Product>> getProductsByPriceRange(
-            @RequestParam double minPrice, @RequestParam double maxPrice) {
+    public ResponseEntity<List<ProductResponse>> getProductsByPriceRange(
+            @RequestParam @Min(value = 0, message = "minPrice must be zero or greater") double minPrice, 
+            @RequestParam @Min(value = 0, message = "maxPrice must be zero or greater") double maxPrice) {
         log.info("Received request to get products by price range: {} - {}", minPrice, maxPrice);
-        List<Product> products = productService.getProductsByPriceRange(minPrice, maxPrice);
-        log.info("Returning {} products within the price range", products.size());
-        return ResponseEntity.ok(products);
+
+        if (minPrice > maxPrice) {
+            log.error("minPrice cannot be greater than maxPrice");
+            throw new ValidationException("minPrice cannot be greater than maxPrice");
+        }
+        
+        List<ProductResponse> productList = productService.getProductsByPriceRange(minPrice, maxPrice);
+        
+        log.info("Returning {} products within the price range", productList.size());
+        return ResponseEntity.ok(productList);
     }
 
     @GetMapping("/paginated")
-    public ResponseEntity<List<Product>> getPaginatedProducts(
-            @RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<List<ProductResponse>> getPaginatedProducts(
+            @RequestParam @Min(value = 0, message = "Page number must be zero or greater") int page, 
+            @RequestParam @Positive(message = "Page size must be greater than zero") int size) {
         log.info("Received request to get paginated products, page: {}, size: {}", page, size);
-        Page<Product> productPage = productService.getPaginatedProducts(page, size);
-        List<Product> productList = productPage.getContent();
-        log.info("Returning page {} of products with size {}", page, size);
+        
+        List<ProductResponse> productList = productService.getPaginatedProducts(page, size);
+        
+        log.info("Returning page {} of products with size {}", page, productList.size());
         return ResponseEntity.ok(productList);
     }
 }
