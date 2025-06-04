@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -79,5 +80,24 @@ public class ProductController {
         productService.deleteProduct(productId);
         log.info("Deleted product with ID: {}", productId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/price-range")
+    public ResponseEntity<List<Product>> getProductsByPriceRange(
+            @RequestParam double minPrice, @RequestParam double maxPrice) {
+        log.info("Received request to get products by price range: {} - {}", minPrice, maxPrice);
+        List<Product> products = productService.getProductsByPriceRange(minPrice, maxPrice);
+        log.info("Returning {} products within the price range", products.size());
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<List<Product>> getPaginatedProducts(
+            @RequestParam int page, @RequestParam int size) {
+        log.info("Received request to get paginated products, page: {}, size: {}", page, size);
+        Page<Product> productPage = productService.getPaginatedProducts(page, size);
+        List<Product> productList = productPage.getContent();
+        log.info("Returning page {} of products with size {}", page, size);
+        return ResponseEntity.ok(productList);
     }
 }

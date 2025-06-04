@@ -15,6 +15,9 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -131,6 +134,19 @@ public class ProductService {
 
         productRepository.deleteByProductId(productId);
         log.info("Product deleted successfully with ID: {}", productId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Product> getProductsByPriceRange(double minPrice, double maxPrice) {
+        log.debug("Fetching products with price between {} and {}", minPrice, maxPrice);
+        return productRepository.findByPriceBetween(minPrice, maxPrice);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Product> getPaginatedProducts(int page, int size) {
+        log.debug("Fetching paginated products with page: {}, size: {}", page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        return productRepository.findAll(pageable);
     }
 
     private void validateProductRequest(ProductRequest request) {
