@@ -15,4 +15,7 @@ public class ProductResponse {
     private double price;
     private String category;
     private int quantity;
+
+    public ProductResponse(String p100, String laptop, double v, String electronics, boolean b) {
+    }
 }

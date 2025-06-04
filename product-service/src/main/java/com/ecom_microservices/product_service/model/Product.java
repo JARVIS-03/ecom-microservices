@@ -36,4 +36,7 @@ public class Product {
 
     @Min(value = 0, message = "Quantity must be zero or greater")
     private int quantity;
+
+    public Product(long l, String p100, String laptop, double v, String electronics, boolean b) {
+    }
 }
