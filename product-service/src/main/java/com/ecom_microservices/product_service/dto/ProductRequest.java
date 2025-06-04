@@ -25,4 +25,7 @@ public class ProductRequest {
 
     @Min(value = 0, message = "Quantity must be zero or greater")
     private int quantity;
+
+    public ProductRequest(String p100, String laptop, double v, String electronics, boolean b) {
+    }
 }

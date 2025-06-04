@@ -30,8 +30,8 @@ class ProductControllerTest {
     // Success case for all APIs
     @Test
     void allAPIs_Success() {
-        ProductRequest request = new ProductRequest("P100", "Laptop", 999.99, "Electronics", 10);
-        ProductResponse response = new ProductResponse("P100", "Laptop", 999.99, "Electronics", 10);
+        ProductRequest request = new ProductRequest("P100", "Laptop", 999.99, "Electronics", true);
+        ProductResponse response = new ProductResponse("P100", "Laptop", 999.99, "Electronics", true);
         List<ProductResponse> productList = List.of(response);
 
         when(productService.createProduct(request)).thenReturn(response);

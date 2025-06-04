@@ -134,8 +134,8 @@ public class ProductService {
     }
 
     private void validateProductRequest(ProductRequest request) {
-        if (!request.getAvailable()) {
-            throw new ValidationException("Product must be available to be saved");
+        if (request.getQuantity() < 0) {
+            throw new ValidationException("Quantity must be zero or greater");
         }
 
         if (!ALLOWED_CATEGORIES.contains(request.getCategory())) {
@@ -148,7 +148,7 @@ public class ProductService {
                 .name(request.getName())
                 .price(request.getPrice())
                 .category(request.getCategory())
-                .available(request.getAvailable())
+                .quantity(request.getQuantity())
                 .build();
     }
 
@@ -156,7 +156,7 @@ public class ProductService {
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setCategory(request.getCategory());
-        product.setAvailable(request.getAvailable());
+        product.setQuantity(request.getQuantity());
     }
 
     private ProductResponse mapToProductResponse(Product product) {
@@ -165,7 +165,7 @@ public class ProductService {
                 .name(product.getName())
                 .price(product.getPrice())
                 .category(product.getCategory())
-                .available(product.isAvailable())
+                .quantity(product.getQuantity())
                 .build();
     }
 
