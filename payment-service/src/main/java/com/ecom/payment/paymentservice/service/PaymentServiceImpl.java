@@ -98,6 +98,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Failed to update order status for orderId: " + orderId);
         }
     }
+
     @Override
     public PaymentResponseDTO updatePaymentStatus(Long paymentId, String status) {
         log.info("Updating payment status for ID: {} to {}", paymentId, status);

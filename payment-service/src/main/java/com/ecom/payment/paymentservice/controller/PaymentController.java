@@ -38,17 +38,6 @@ public class PaymentController {
 
 
 
-    @PutMapping("/{id}/{status}")
-    public ResponseEntity<PaymentResponseDTO> paymentStatusUpdate(
-            @PathVariable Long id,
-            @PathVariable String status) {
-
-        log.info("Updating payment status. Payment ID: {}, New Status: {}", id, status);
-        PaymentResponseDTO updatedPayment = paymentService.updatePaymentStatus(id, status);
-        log.info("Payment status updated. Updated payment: {}", updatedPayment);
-        return ResponseEntity.ok(updatedPayment);
-    }
-
     @PutMapping("/refund/{orderId}")
     public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable String orderId) {
         PaymentResponseDTO refundedPayment = paymentService.refundPayment(orderId);
@@ -61,6 +50,16 @@ public class PaymentController {
         List<PaymentResponseDTO> payments = paymentService.getPaymentsByOrderId(orderId);
         log.info("Total {} payments found for Order ID: {}", payments.size(), orderId);
         return new ResponseEntity<>(payments, HttpStatus.OK);
+    }
+    @PutMapping("/{id}/{status}")
+    public ResponseEntity<PaymentResponseDTO> paymentStatusUpdate(
+            @PathVariable Long id,
+            @PathVariable String status) {
+
+        log.info("Updating payment status. Payment ID: {}, New Status: {}", id, status);
+        PaymentResponseDTO updatedPayment = paymentService.updatePaymentStatus(id, status);
+        log.info("Payment status updated. Updated payment: {}", updatedPayment);
+        return ResponseEntity.ok(updatedPayment);
     }
 
 }
