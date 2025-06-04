@@ -14,5 +14,5 @@ public class ProductResponse {
     private String name;
     private double price;
     private String category;
-    private boolean available;
+    private int quantity;
 }

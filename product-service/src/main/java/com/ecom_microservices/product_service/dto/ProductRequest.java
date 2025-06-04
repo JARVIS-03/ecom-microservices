@@ -23,6 +23,6 @@ public class ProductRequest {
     @NotBlank(message = "Category is mandatory")
     private String category;
 
-    @NotNull(message = "Availability must be specified")
-    private Boolean available;
+    @Min(value = 0, message = "Quantity must be zero or greater")
+    private int quantity;
 }

@@ -34,5 +34,6 @@ public class Product {
     @NotBlank(message = "Category is mandatory")
     private String category;
 
-    private boolean available;
+    @Min(value = 0, message = "Quantity must be zero or greater")
+    private int quantity;
 }
