@@ -41,11 +41,35 @@ public class NotificationService {
                 .type(Enum.valueOf(com.ecom_microservices.notify_service.enums.NotificationType.class, requestDTO.getNotificationType().toUpperCase()))
                 .priority(Enum.valueOf(com.ecom_microservices.notify_service.enums.PriorityLevel.class, requestDTO.getPriority().toUpperCase()))
                 .status(NotificationStatus.PENDING)
-                //.scheduledTime(requestDTO.getScheduledTime())
                 .build();
 
         Notification saved = repository.save(notification);
         logger.debug("Notification saved with ID: {}", saved.getId());
+        return new NotificationResponseDTO(
+                saved.getId(),
+                saved.getRecipient(),
+                saved.getMessageContent(),
+                saved.getType().name(),
+                saved.getPriority().name(),
+                saved.getStatus().name(),
+                saved.getCreatedTimestamp(),
+                saved.getUpdatedTimestamp()
+        );
+    }
+    
+    public NotificationResponseDTO scheduleNotification(NotificationRequestDTO requestDTO, LocalDateTime schedule) {
+        logger.info("Scheduling notification for recipient: {} at {}", requestDTO.getRecipient(), schedule);
+        Notification notification = Notification.builder()
+                .recipient(requestDTO.getRecipient())
+                .messageContent(requestDTO.getMessageContent())
+                .type(Enum.valueOf(com.ecom_microservices.notify_service.enums.NotificationType.class, requestDTO.getNotificationType().toUpperCase()))
+                .priority(Enum.valueOf(com.ecom_microservices.notify_service.enums.PriorityLevel.class, requestDTO.getPriority().toUpperCase()))
+                .status(NotificationStatus.PENDING)
+                .scheduledTime(schedule)
+                .build();
+
+        Notification saved = repository.save(notification);
+        logger.debug("Notification scheduled with ID: {}", saved.getId());
         return new NotificationResponseDTO(
                 saved.getId(),
                 saved.getRecipient(),

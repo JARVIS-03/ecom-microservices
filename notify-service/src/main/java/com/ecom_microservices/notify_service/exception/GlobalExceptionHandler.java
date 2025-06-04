@@ -10,7 +10,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +51,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.internalServerError()
                 .body("An unexpected error occurred: " + ex.getMessage());
     }
+    
     @Override
     protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
             HttpRequestMethodNotSupportedException ex,
@@ -60,10 +64,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logger.warn(errorMessage);
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorMessage);
     }
+    
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<String> handleDataAccessException(DataAccessException ex) {
         logger.error("Database access error: ", ex);
         String message = "A database error occurred. Please try again later.";
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
+    }
+    
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, IllegalArgumentException.class})
+    public ResponseEntity<String> handleInputMismatchExceptions(Exception ex) {
+        logger.error("Invalid request by user: ", ex);
+        String message = "You have sent an invalid request. ";
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+    }
+    
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException ex) {
+        logger.error("Validation failed for request: ", ex);
+        StringBuilder messageBuilder = new StringBuilder("Invalid request. Issues:\n");
+        ex.getConstraintViolations().forEach(violation -> {
+            messageBuilder.append("- ")
+                          .append(violation.getPropertyPath())
+                          .append(": ")
+                          .append(violation.getMessage())
+                          .append("\n");
+        });
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(messageBuilder.toString());
     }
 }
