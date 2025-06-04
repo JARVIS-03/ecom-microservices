@@ -2,6 +2,7 @@ package com.ecom.payment.paymentservice.service;
 
 import com.ecom.payment.paymentservice.dto.PaymentRequestDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
+import com.ecom.payment.paymentservice.exception.ResourceNotFoundException;
 import com.ecom.payment.paymentservice.mapper.PaymentRequestDTOtoPaymentMapper;
 import com.ecom.payment.paymentservice.model.Payment;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
@@ -34,38 +35,78 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDTO initiatePayment(PaymentRequestDTO dto) {
         log.info("Initiating payment for orderId: {}", dto.getOrderId());
 
-        Payment payment = PaymentRequestDTOtoPaymentMapper.INSTANCE.map(dto);
-        payment.setStatus("INITIATED");
+//        String orderServiceUrl = "http://ORDER-SERVICE/api/orders/" + dto.getOrderId();
+//        try {
+//            restTemplate.getForObject(orderServiceUrl, Object.class);
+//            log.info("Order ID {} is valid", dto.getOrderId());
+//        } catch (Exception ex) {
+//            log.error("Invalid order ID: {}", dto.getOrderId(), ex);
+//            throw new InvalidOrderException("Invalid Order ID: " + dto.getOrderId());
+//        }
+//
+//        boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
+//                .anyMatch(payment -> "SUCCESS".equalsIgnoreCase(payment.getStatus()));
+        boolean hasSuccessfulPayment=false;
 
+        if (hasSuccessfulPayment) {
+            log.warn("Payment already completed for orderId: {}", dto.getOrderId());
+            throw new RuntimeException("Payment already completed for order ID: " + dto.getOrderId());
+        }
+
+        Payment payment = new Payment();
+        payment.setOrderId(dto.getOrderId());
+        payment.setAmount(dto.getAmount());
+        payment.setPaymentMethod(dto.getPaymentMethod());
+        payment.setStatus("INITIATED");
+        payment.setDate(LocalDateTime.now());
+
+        String methodDetails;
         try {
-            String methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
+            methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
             payment.setPaymentDetails(methodDetails);
+            log.debug("Serialized method details: {}", methodDetails);
         } catch (Exception e) {
             log.error("Error serializing method details", e);
+            throw new RuntimeException("Failed to serialize payment method details");
         }
 
         payment = paymentRepository.save(payment);
+        log.info("Payment saved with ID: {}", payment.getPaymentId());
+
         String result = mockPaymentGateway(dto.getPaymentMethod());
-        log.info("Payment gateway result: {}", result);
-        return updatePaymentStatus(payment.getPaymentId(), result);
+        log.info("Payment gateway result for method {}: {}", dto.getPaymentMethod(), result);
+
+        PaymentResponseDTO response = updatePaymentStatus(payment.getPaymentId(), result);
+        log.info("Final payment response after status update: {}", response);
+        return response;
     }
 
     private String mockPaymentGateway(String method) {
-        return Math.random() > 0.5 ? "SUCCESS" : "FAILED";
+        String status = Math.random() > 0.2 ? "SUCCESS" : "FAILED";
+        log.debug("Mock payment gateway status for method {}: {}", method, status);
+        return status;
     }
 
     public void updateOrderStatus(String orderId, String status) {
         String url = "http://ORDER-SERVICE/api/orders/" + orderId + "/status";
-        restTemplate.put(url, status);
+        try {
+            restTemplate.put(url, status);
+            log.info("Order status updated for orderId: {} with status: {}", orderId, status);
+        } catch (Exception e) {
+            log.error("Error updating order status for orderId: {}", orderId, e);
+            throw new RuntimeException("Failed to update order status for orderId: " + orderId);
+        }
     }
-
     @Override
     public PaymentResponseDTO updatePaymentStatus(Long paymentId, String status) {
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow();
+        log.info("Updating payment status for ID: {} to {}", paymentId, status);
+
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for ID: " + paymentId));
+
         payment.setStatus(status);
         payment = paymentRepository.save(payment);
 
-//        updateOrderStatus(payment.getOrderId(), status);
         return paymentConverter.toDTO(payment);
     }
 

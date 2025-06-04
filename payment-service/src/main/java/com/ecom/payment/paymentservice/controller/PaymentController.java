@@ -24,8 +24,8 @@ public class PaymentController {
     @PostMapping("/initiate")
     public ResponseEntity<PaymentResponseDTO> initiate(@Valid @RequestBody PaymentRequestDTO request) {
         RequestValidator.validatePaymentDetails(request);
-            log.info("Initiating payment with payload: {}", request);
-            return new ResponseEntity<>(paymentService.initiatePayment(request), HttpStatus.OK);
+        log.info("Initiating payment with payload: {}", request);
+        return new ResponseEntity<>(paymentService.initiatePayment(request), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -39,14 +39,14 @@ public class PaymentController {
         return new ResponseEntity<>(paymentService.getPaymentsByOrderId(orderId), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/status")
+    @PutMapping("/{id}/{status}")
     public ResponseEntity<PaymentResponseDTO> paymentStatusUpdate(
             @PathVariable Long id,
-            @RequestParam String status) {
-        RequestValidator.validateRequestParam(status);
+            @PathVariable String status) {
+
         log.info("Updating payment status. Payment ID: {}, New Status: {}", id, status);
         PaymentResponseDTO updatedPayment = paymentService.updatePaymentStatus(id, status);
-        log.info("Updated payment response: {}", updatedPayment);
+        log.info("Payment status updated. Updated payment: {}", updatedPayment);
         return ResponseEntity.ok(updatedPayment);
     }
 
