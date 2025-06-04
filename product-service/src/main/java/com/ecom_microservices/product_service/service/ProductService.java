@@ -38,6 +38,7 @@ public class ProductService {
             backoff = @Backoff(delay = 2000),
             exclude = ProductNotFoundException.class
     )
+
     @Transactional(readOnly = true)
     public ProductResponse getProductById(String productId) {
         log.debug("Attempting to fetch product with ID: {}", productId);
