@@ -112,9 +112,9 @@ public class NotificationService {
                 .recipient(orderDTO.getUserEmail())
                 .messageContent(message)
                 .type(NotificationType.EMAIL)
-                .priority(status == OrderStatus.DELIVERED ? PriorityLevel.HIGH : PriorityLevel.MEDIUM)
+                .priority((status == OrderStatus.DELIVERED || status == OrderStatus.CANCELLED) ? PriorityLevel.HIGH : PriorityLevel.MEDIUM)
                 .status(NotificationStatus.PENDING)
-                .scheduledTime(status != OrderStatus.DELIVERED ? LocalDateTime.now().plusMinutes(5) : null)
+                .scheduledTime((status == OrderStatus.DELIVERED || status == OrderStatus.CANCELLED) ? null : LocalDateTime.now().plusMinutes(5))
                 .build();
 
         Notification saved = repository.save(notification);
