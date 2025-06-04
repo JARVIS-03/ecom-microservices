@@ -1,4 +1,4 @@
-package com.ecom_microservices.product_service.product_controller_test;
+package com.ecom_microservices.product_service.product_service_test;
 
 import com.ecom_microservices.product_service.dto.ProductRequest;
 import com.ecom_microservices.product_service.dto.ProductResponse;
