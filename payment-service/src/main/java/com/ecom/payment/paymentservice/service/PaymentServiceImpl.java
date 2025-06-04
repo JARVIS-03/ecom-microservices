@@ -112,7 +112,12 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponseDTO getPaymentById(Long id) {
-        return paymentConverter.toDTO(paymentRepository.findById(id).orElseThrow());
+        log.info("Fetching payment by ID: {}", id);
+
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for ID: " + id));
+
+        return paymentConverter.toDTO(payment);
     }
 
     @Override

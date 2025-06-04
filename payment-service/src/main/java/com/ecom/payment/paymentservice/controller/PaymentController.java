@@ -30,7 +30,10 @@ public class PaymentController {
 
     @GetMapping("/{id}")
     public ResponseEntity<String> getStatus(@PathVariable Long id) {
-        return new ResponseEntity<>(paymentService.getPaymentById(id).getStatus(), HttpStatus.OK);
+        log.info("Fetching payment status for ID: {}", id);
+        String status = paymentService.getPaymentById(id).getStatus();
+        log.info("Payment status for ID {}: {}", id, status);
+        return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
     @GetMapping("/order/{orderId}")
