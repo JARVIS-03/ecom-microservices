@@ -28,24 +28,28 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
     }
+
+    @GetMapping("/{productId}")
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable String productId) {
+        ProductResponse response = productService.getProductById(productId);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/addProduct")
     public ResponseEntity<ProductResponse> createProduct(@Valid @RequestBody ProductRequest productRequest) {
         ProductResponse response = productService.createProduct(productRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
-   @PutMapping("/{productId}")
+
+    @PutMapping("/{productId}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable String productId,
             @Valid @RequestBody ProductRequest productRequest) {
         ProductResponse response = productService.updateProduct(productId, productRequest);
         return ResponseEntity.ok(response);
     }
- @GetMapping("/{productId}")
-    public ResponseEntity<ProductResponse> getProductById(@PathVariable String productId) {
-        ProductResponse response = productService.getProductById(productId);
-        return ResponseEntity.ok(response);
-    }
-     @GetMapping("/category/{category}")
+
+    @GetMapping("/category/{category}")
     public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String category) {
         List<Product> products = productService.getProductsByCategory(category);
         return ResponseEntity.ok(products);
@@ -54,6 +58,12 @@ public class ProductController {
     public ResponseEntity<List<Product>> searchProductsByName(@PathVariable String keyword) {
         List<Product> products = productService.searchProductsByName(keyword);
         return ResponseEntity.ok(products);
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable String productId) {
+        productService.deleteProduct(productId);
+        return ResponseEntity.noContent().build();
     }
 
 }

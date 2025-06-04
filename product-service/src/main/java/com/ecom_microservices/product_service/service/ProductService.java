@@ -23,8 +23,11 @@ import java.util.List;
 @Slf4j
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     private static final List<String> ALLOWED_CATEGORIES = Arrays.asList(
             "Electronics", "Books", "Clothing", "Home"
@@ -48,10 +51,6 @@ public class ProductService {
         log.info("Product found with ID: {}", productId);
         return mapToProductResponse(product);
     }
-//
-//    public List<Product> getAllProducts() {
-//        return this.productRepository.findAll();
-//    }
 
     @Retryable(
             value = { RuntimeException.class },
@@ -63,7 +62,7 @@ public class ProductService {
 
         List<Product> products = productRepository.findAll();
 
-        if (products == null || products.isEmpty()) {
+        if (products.isEmpty()) {
             log.warn("Product list is empty, triggering retry...");
             throw new RuntimeException("Product list is empty, retrying...");
         }
@@ -78,19 +77,6 @@ public class ProductService {
         return List.of();
     }
 
-
-    private ProductResponse mapToProductResponse(Product product) {
-        return ProductResponse.builder()
-                .productId(product.getProductId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .category(product.getCategory())
-                .available(product.isAvailable())
-                .build();
-    }
-
-
-
     @Transactional(readOnly = true)
     public List<Product> searchProductsByName(String keyword) {
         return productRepository.findByNameContainingIgnoreCase(keyword);
@@ -102,7 +88,7 @@ public class ProductService {
         }
         return productRepository.findByCategory(category);
     }
-      @Transactional
+    @Transactional
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
         validateProductRequest(productRequest);
 
@@ -117,7 +103,7 @@ public class ProductService {
         log.info("Product updated successfully with ID: {}", productId);
         return mapToProductResponse(updatedProduct);
     }
-     @Transactional
+    @Transactional
     public ProductResponse createProduct(ProductRequest productRequest) {
         validateProductRequest(productRequest);
 
@@ -133,6 +119,19 @@ public class ProductService {
         log.info("Product created successfully with ID: {}", product.getProductId());
         return mapToProductResponse(product);
     }
+
+    @Transactional
+    public void deleteProduct(String productId) {
+        if (!productRepository.existsByProductId(productId)) {
+            throw new ProductNotFoundException(
+                    "Product not found with ID: " + productId
+            );
+        }
+
+        productRepository.deleteByProductId(productId);
+        log.info("Product deleted successfully with ID: {}", productId);
+    }
+
     private void validateProductRequest(ProductRequest request) {
         if (!request.getAvailable()) {
             throw new ValidationException("Product must be available to be saved");
@@ -157,6 +156,16 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setCategory(request.getCategory());
         product.setAvailable(request.getAvailable());
+    }
+
+    private ProductResponse mapToProductResponse(Product product) {
+        return ProductResponse.builder()
+                .productId(product.getProductId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .category(product.getCategory())
+                .available(product.isAvailable())
+                .build();
     }
 
     

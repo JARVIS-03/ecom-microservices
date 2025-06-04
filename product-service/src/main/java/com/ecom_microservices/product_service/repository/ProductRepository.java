@@ -13,7 +13,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByProductId(String productId);
     boolean existsByProductId(String productId);
     void deleteByProductId(String productId);
-     List<Product> findByCategory(String category);
+    List<Product> findByCategory(String category);
     List<Product> findByAvailableTrue();
     List<Product> findByNameContainingIgnoreCase(String keyword);
 }
