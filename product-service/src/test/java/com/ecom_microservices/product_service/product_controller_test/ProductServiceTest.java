@@ -30,9 +30,9 @@ class ProductServiceTest {
     // Success case for all methods
     @Test
     void allMethods_Success() {
-        ProductRequest request = new ProductRequest("P100", "Laptop", 999.99, "Electronics", true);
-        Product product = new Product(1L, "P100", "Laptop", 999.99, "Electronics", true);
-        ProductResponse response = new ProductResponse("P100", "Laptop", 999.99, "Electronics", true);
+        ProductRequest request = new ProductRequest("P100", "Laptop", 999.99, "Electronics", 10);
+        Product product = new Product(1L, "P100", "Laptop", 999.99, "Electronics", 10);
+        ProductResponse response = new ProductResponse("P100", "Laptop", 999.99, "Electronics", 10);
 
         when(productRepository.save(any())).thenReturn(product);
         when(productRepository.findByProductId("P100")).thenReturn(Optional.of(product));
