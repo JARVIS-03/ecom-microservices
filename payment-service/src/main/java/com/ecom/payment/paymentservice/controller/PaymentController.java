@@ -53,5 +53,11 @@ public class PaymentController {
         return ResponseEntity.ok(updatedPayment);
     }
 
+    @PutMapping("/refund/{orderId}")
+    public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable String orderId) {
+        PaymentResponseDTO refundedPayment = paymentService.refundPayment(orderId);
+        return ResponseEntity.ok(refundedPayment);
+    }
+
 }
 

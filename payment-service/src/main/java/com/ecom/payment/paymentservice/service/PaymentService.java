@@ -11,5 +11,5 @@ public interface PaymentService {
     PaymentResponseDTO updatePaymentStatus(Long paymentId, String status);
     PaymentResponseDTO getPaymentById(Long id);
     List<PaymentResponseDTO> getPaymentsByOrderId(String orderId);
-
+    PaymentResponseDTO refundPayment(String orderId);
 }

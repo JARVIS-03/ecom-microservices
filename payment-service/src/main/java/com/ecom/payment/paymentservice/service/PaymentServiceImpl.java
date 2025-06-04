@@ -2,6 +2,7 @@ package com.ecom.payment.paymentservice.service;
 
 import com.ecom.payment.paymentservice.dto.PaymentRequestDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
+import com.ecom.payment.paymentservice.exception.InvalidOrderException;
 import com.ecom.payment.paymentservice.exception.ResourceNotFoundException;
 import com.ecom.payment.paymentservice.mapper.PaymentRequestDTOtoPaymentMapper;
 import com.ecom.payment.paymentservice.model.Payment;
@@ -126,6 +127,41 @@ public class PaymentServiceImpl implements PaymentService {
                 .stream()
                 .map(paymentConverter::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public PaymentResponseDTO refundPayment(String orderId) {
+        log.info("Initiating refund for orderId: {}", orderId);
+
+        String orderServiceUrl = "http://ORDER-SERVICE/api/orders/" + orderId;
+        try {
+            restTemplate.getForObject(orderServiceUrl, Object.class);
+            log.info("Order ID {} is valid", orderId);
+        } catch (Exception ex) {
+            log.error("Invalid order ID: {}", orderId, ex);
+            throw new InvalidOrderException("Invalid Order ID: " + orderId);
+        }
+
+        List<Payment> payments = paymentRepository.findByOrderId(orderId);
+        if (payments.isEmpty()) {
+            throw new ResourceNotFoundException("No payments found for Order ID: " + orderId);
+        }
+
+        Payment successfulPayment = payments.stream()
+                .filter(p -> "SUCCESS".equalsIgnoreCase(p.getStatus()))
+                .findFirst()
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("No successful payment found to refund for Order ID: " + orderId)
+                );
+
+
+        successfulPayment.setStatus("REFUNDED");
+        paymentRepository.save(successfulPayment);
+        log.info("Payment ID {} marked as REFUNDED", successfulPayment.getPaymentId());
+
+        updateOrderStatus(orderId, "REFUNDED");
+
+        return paymentConverter.toDTO(successfulPayment);
     }
 }
 
