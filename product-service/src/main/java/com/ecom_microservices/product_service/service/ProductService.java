@@ -57,6 +57,20 @@ public class ProductService {
         return mapToProductResponse(product);
     }
 
+    @Recover
+    public ProductResponse recover(Exception ex, String productId) {
+        log.error("Failed to fetch product with ID: {} after retries. Reason: {}", productId, ex.getMessage());
+
+        ProductResponse fallback = new ProductResponse();
+        fallback.setProductId(productId);
+        fallback.setName("Unavailable");
+        fallback.setPrice(0.0);
+        fallback.setCategory("Unknown");
+        fallback.setQuantity(0);
+
+        return fallback;
+    }
+
     @Retryable(
             value = { RuntimeException.class },
             maxAttempts = 3,
@@ -97,17 +111,21 @@ public class ProductService {
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
         validateProductRequest(productRequest);
 
+        if (!productId.equals(productRequest.getProductId())) {
+            throw new ValidationException("Product ID in path and body must match");
+        }
+
         Product existingProduct = productRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException(
-                        "Product not found with ID: " + productId
-                ));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
 
         updateProductDetails(existingProduct, productRequest);
-        Product updatedProduct = productRepository.save(existingProduct);
 
+        Product updatedProduct = productRepository.save(existingProduct);
         log.info("Product updated successfully with ID: {}", productId);
+
         return mapToProductResponse(updatedProduct);
     }
+
     @Transactional
     public ProductResponse createProduct(ProductRequest productRequest) {
         validateProductRequest(productRequest);
