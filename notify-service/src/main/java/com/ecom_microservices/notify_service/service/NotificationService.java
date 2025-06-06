@@ -172,9 +172,11 @@ package com.ecom_microservices.notify_service.service;
 import com.ecom_microservices.notify_service.dto.NotificationRequestDTO;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
 import com.ecom_microservices.notify_service.dto.OrderDTO;
+import com.ecom_microservices.notify_service.dto.PaymentDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.enums.NotificationType;
 import com.ecom_microservices.notify_service.enums.OrderStatus;
+import com.ecom_microservices.notify_service.enums.PaymentStatus;
 import com.ecom_microservices.notify_service.enums.PriorityLevel;
 import com.ecom_microservices.notify_service.exception.InvalidNotificationRequestException;
 import com.ecom_microservices.notify_service.exception.InvalidOrderStatusRequestException;
@@ -182,6 +184,8 @@ import com.ecom_microservices.notify_service.exception.NotificationNotFoundExcep
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.repository.NotificationRepository;
 import com.ecom_microservices.notify_service.util.EmailSender;
+
+import jakarta.validation.Valid;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -256,16 +260,41 @@ public class NotificationService {
         }
 
         String message = buildOrderMessage(orderDTO);
-       
-        Notification notification = buildOrderNotification(orderDTO,message);
+
+        Notification notification = buildOrderNotification(orderDTO, message);
 
         Notification saved = repository.save(notification);
         logger.debug("Notification saved with ID: {}", saved.getId());
 
-        if (isHighPriority(orderDTO.getStatus())) {
+        if (isHighOrderPriority(orderDTO.getStatus())) {
             emailSender.send(saved);
+            logger.info("mail send successfuly with order Id : "+orderDTO.getOrderId());
         }
 
+        return toDto(saved);
+    }
+
+    @Transactional
+    public NotificationResponseDTO createPaymentStatusNotification(PaymentDTO paymentDTO) {
+        logger.info("Creating notification for recipient: {}", paymentDTO.getUserEmail());
+
+        if (paymentDTO.getStatus() == null) {
+            throw new InvalidOrderStatusRequestException("Order status cannot be null");
+        }
+
+        String message = buildPaymentMessage(paymentDTO);
+
+        Notification notification = buildPaymentNotification(paymentDTO, message);
+
+        Notification saved = repository.save(notification);
+        logger.debug("Notification saved with ID: {}", saved.getId());
+
+        if (isHighPaymentPriority(paymentDTO.getStatus())) {
+            emailSender.send(saved);
+            logger.info("mail send successfuly with payment Id : "+paymentDTO.getPaymentId());
+        }
+        
+       
         return toDto(saved);
     }
 
@@ -306,14 +335,14 @@ public class NotificationService {
 
     private Notification buildEntity(NotificationRequestDTO dto,
             LocalDateTime schedule) {
-            return Notification.builder()
-                    .recipient(dto.getRecipient())
-                    .messageContent(dto.getMessageContent())
-                    .type(NotificationType.valueOf(dto.getNotificationType().toUpperCase()))
-                    .priority(PriorityLevel.valueOf(dto.getPriority().toUpperCase()))
-                    .status(NotificationStatus.PENDING)
-                    .scheduledTime(schedule)
-                    .build();
+        return Notification.builder()
+                .recipient(dto.getRecipient())
+                .messageContent(dto.getMessageContent())
+                .type(NotificationType.valueOf(dto.getNotificationType().toUpperCase()))
+                .priority(PriorityLevel.valueOf(dto.getPriority().toUpperCase()))
+                .status(NotificationStatus.PENDING)
+                .scheduledTime(schedule)
+                .build();
     }
 
     private NotificationResponseDTO toDto(Notification n) {
@@ -323,45 +352,86 @@ public class NotificationService {
                 n.getCreatedTimestamp(), n.getUpdatedTimestamp());
     }
 
-    private boolean isHighPriority(OrderStatus st) {
+    private boolean isHighOrderPriority(OrderStatus st) {
         return st == OrderStatus.DELIVERED || st == OrderStatus.CANCELLED;
     }
 
+    private boolean isHighPaymentPriority(PaymentStatus st) {
+        return st == PaymentStatus.SUCCESS || st == PaymentStatus.FAILED || st == PaymentStatus.REFUNDED;
+    }
 
-  private Notification buildOrderNotification(OrderDTO orderDTO, String message) {
-    try {
-        OrderStatus status = orderDTO.getStatus();
+    private Notification buildOrderNotification(OrderDTO orderDTO, String message) {
+        try {
+            OrderStatus status = orderDTO.getStatus();
 
             return Notification.builder()
-                .recipient(orderDTO.getUserEmail())
-                .messageContent(message)
-                .type(NotificationType.EMAIL)
-                .priority(isHighPriority(status)
-                        ? PriorityLevel.HIGH
-                        : PriorityLevel.MEDIUM)
-                .status(NotificationStatus.PENDING)
-                .scheduledTime(isHighPriority(status)
-                        ? null
-                        : LocalDateTime.now().plusMinutes(5))
-                .build();
+                    .recipient(orderDTO.getUserEmail())
+                    .messageContent(message)
+                    .type(NotificationType.EMAIL)
+                    .priority(isHighOrderPriority(status)
+                            ? PriorityLevel.HIGH
+                            : PriorityLevel.MEDIUM)
+                    .status(NotificationStatus.PENDING)
+                    .scheduledTime(isHighOrderPriority(status)
+                            ? null
+                            : LocalDateTime.now().plusMinutes(5))
+                    .build();
 
-    }catch (Exception ex) {
-        throw new InvalidOrderStatusRequestException("Error while building order notification.", ex);
+        } catch (Exception ex) {
+            throw new InvalidOrderStatusRequestException("Error while building order notification.", ex);
+        }
     }
-}
 
-    
+    private Notification buildPaymentNotification(PaymentDTO paymentDTO, String message) {
+        try {
+            PaymentStatus status = paymentDTO.getStatus();
+
+            return Notification.builder()
+                    .recipient(paymentDTO.getUserEmail())
+                    .messageContent(message)
+                    .type(NotificationType.EMAIL)
+                    .priority(isHighPaymentPriority(status)
+                            ? PriorityLevel.HIGH
+                            : PriorityLevel.MEDIUM)
+                    .status(NotificationStatus.PENDING)
+                    .scheduledTime(isHighPaymentPriority(status)
+                            ? null
+                            : LocalDateTime.now().plusMinutes(5))
+                    .build();
+
+        } catch (Exception ex) {
+            throw new InvalidOrderStatusRequestException("Error while building payment notification.", ex);
+        }
+    }
 
     private String buildOrderMessage(OrderDTO o) {
         return switch (o.getStatus()) {
             case NEW ->
-                "We Received your order. Your order Id is " + o.getOrderId() + " Will start processing shortly!";
+                "We have received your order. Your Order ID is " + o.getOrderId() + ". Processing will start shortly.";
             case PROCESSING ->
-                "We are processing your order id is " + o.getOrderId() + ". please wait for further updates.";
+                "Your order (Order ID: " + o.getOrderId()
+                        + ") is currently being processed. Please wait for further updates.";
             case SHIPPED ->
-                "Your Order with Order Id: " + o.getOrderId() + " is shipped successfully, It will be delivered Soon";
-            case DELIVERED -> "Your Order with Order Id: " + o.getOrderId() + " successfully delivered!";
-            case CANCELLED -> "Your Order with Id: " + o.getOrderId() + " is cancelled! ";
+                "Your order (Order ID: " + o.getOrderId() + ") has been shipped. It will be delivered soon.";
+            case DELIVERED ->
+                "Your order (Order ID: " + o.getOrderId() + ") has been delivered successfully!";
+            case CANCELLED ->
+                "Your order (Order ID: " + o.getOrderId() + ") has been cancelled.";
+        };
+    }
+
+    private String buildPaymentMessage(PaymentDTO p) {
+        return switch (p.getStatus()) {
+            case INITIATED ->
+                "Your payment for Payment ID " + p.getPaymentId() + " has been initiated.";
+            case PROCESSING ->
+                "Your payment for Payment ID " + p.getPaymentId() + " is currently being processed.";
+            case SUCCESS ->
+                "Payment successful for Payment ID " + p.getPaymentId() + ". Thank you for your purchase!";
+            case FAILED ->
+                "Payment failed for Payment ID " + p.getPaymentId() + ". Please try again.";
+            case REFUNDED ->
+                "Your payment for Payment ID " + p.getPaymentId() + " has been refunded.";
         };
     }
 
