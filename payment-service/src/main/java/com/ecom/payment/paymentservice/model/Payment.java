@@ -1,5 +1,6 @@
 package com.ecom.payment.paymentservice.model;
 
+import com.ecom.payment.paymentservice.enums.PaymentStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -11,7 +12,8 @@ public class Payment {
 
     private Long orderId;
     private Double amount;
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
     private String paymentMethod;
     private LocalDateTime date;
 
@@ -21,7 +23,6 @@ public class Payment {
     public Long getPaymentId() {
         return paymentId;
     }
-
     public void setPaymentId(Long paymentId) {
         this.paymentId = paymentId;
     }
@@ -29,7 +30,6 @@ public class Payment {
     public Long getOrderId() {
         return orderId;
     }
-
     public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
@@ -37,23 +37,20 @@ public class Payment {
     public Double getAmount() {
         return amount;
     }
-
     public void setAmount(Double amount) {
         this.amount = amount;
     }
 
-    public String getStatus() {
+    public PaymentStatus getStatus() {
         return status;
     }
-
-    public void setStatus(String status) {
+    public void setStatus(PaymentStatus status) {
         this.status = status;
     }
 
     public String getPaymentMethod() {
         return paymentMethod;
     }
-
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
     }
@@ -61,7 +58,6 @@ public class Payment {
     public LocalDateTime getDate() {
         return date;
     }
-
     public void setDate(LocalDateTime date) {
         this.date = date;
     }
@@ -69,7 +65,6 @@ public class Payment {
     public String getPaymentDetails() {
         return paymentDetails;
     }
-
     public void setPaymentDetails(String paymentDetails) {
         this.paymentDetails = paymentDetails;
     }

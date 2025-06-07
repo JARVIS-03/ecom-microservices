@@ -2,14 +2,17 @@ package com.ecom.payment.paymentservice.service;
 
 import com.ecom.payment.paymentservice.dto.PaymentRequestDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
+import com.ecom.payment.paymentservice.enums.PaymentStatus;
 import com.ecom.payment.paymentservice.exception.InvalidOrderException;
 import com.ecom.payment.paymentservice.exception.ResourceNotFoundException;
 import com.ecom.payment.paymentservice.mapper.PaymentRequestDTOtoPaymentMapper;
 import com.ecom.payment.paymentservice.model.Payment;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
 import com.ecom.payment.paymentservice.utillity.PaymentConverter;
+import com.ecom.payment.paymentservice.utillity.PaymentGatewaySimulator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,87 +23,74 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PaymentService.class);
 
-    @Autowired
-    private PaymentRepository paymentRepository;
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    @Autowired
-    private PaymentConverter paymentConverter;
-
+    private final PaymentRepository paymentRepository;
+    private final RestTemplate restTemplate;
+    private final PaymentConverter paymentConverter;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final String ORDER_SERVICE_BASE_URL = "http://ORDER-SERVICE/api/orders/";
 
     @Override
     @Transactional
     public PaymentResponseDTO initiatePayment(PaymentRequestDTO dto) {
         log.info("Initiating payment for orderId: {}", dto.getOrderId());
 
-        validateOrderId(dto.getOrderId());
+        validateOrder(dto.getOrderId());
         boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
-               .anyMatch(payment -> "SUCCESS".equalsIgnoreCase(payment.getStatus()));
+               .anyMatch(payment -> PaymentStatus.SUCCESS.equals(payment.getStatus()));
 
         if (hasSuccessfulPayment) {
             log.warn("Payment already completed for orderId: {}", dto.getOrderId());
-            throw new RuntimeException("Payment already completed for order ID: " + dto.getOrderId());
+            throw new IllegalStateException("Payment already completed for order ID: " + dto.getOrderId());
         }
 
-        Payment payment = new Payment();
-        payment.setOrderId(dto.getOrderId());
-        payment.setAmount(dto.getAmount());
-        payment.setPaymentMethod(dto.getPaymentMethod());
-        payment.setStatus("INITIATED");
-        payment.setDate(LocalDateTime.now());
-
-        String methodDetails;
-        try {
-            methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
-            payment.setPaymentDetails(methodDetails);
-            log.debug("Serialized method details: {}", methodDetails);
-        } catch (Exception e) {
-            log.error("Error serializing method details", e);
-            throw new RuntimeException("Failed to serialize payment method details");
-        }
-
+        Payment payment = buildPaymentEntity(dto);
         payment = paymentRepository.save(payment);
         log.info("Payment saved with ID: {}", payment.getPaymentId());
 
-        String result = mockPaymentGateway(dto.getPaymentMethod());
+        String result = PaymentGatewaySimulator.simulate(dto.getPaymentMethod());
         log.info("Payment gateway result for method {}: {}", dto.getPaymentMethod(), result);
 
         PaymentResponseDTO response = updatePaymentStatus(payment.getPaymentId(), result);
         log.info("Final payment response after status update: {}", response);
+
         return response;
     }
 
-    private void validateOrderId(Long orderId) {
-        String orderServiceUrl = "http://ORDER-SERVICE/api/order/" + orderId;
+    private Payment buildPaymentEntity(PaymentRequestDTO dto) {
+
+        // Should be changed using ModelMapper
+        Payment payment = new Payment();
+        payment.setOrderId(dto.getOrderId());
+        payment.setAmount(dto.getAmount());
+        payment.setPaymentMethod(dto.getPaymentMethod());
+        payment.setStatus(PaymentStatus.INITIATED);
+        payment.setDate(LocalDateTime.now());
+
         try {
-            restTemplate.getForObject(orderServiceUrl, Object.class);
-            log.info("Order ID {} is valid", orderId);
-        } catch (InvalidOrderException ex) {
-            log.error("Invalid order ID: {}", orderId, ex);
-            throw new InvalidOrderException("Invalid Order ID: " + orderId);
+            String methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
+            payment.setPaymentDetails(methodDetails);
+            log.debug("Serialized method details: {}", methodDetails);
+        } catch (JsonProcessingException e) {
+            log.error("Error serializing method details", e);
+            throw new IllegalStateException("Failed to serialize payment method details");
         }
+
+        return payment;
     }
 
-    private String mockPaymentGateway(String method) {
-        String status = Math.random() > 0.2 ? "SUCCESS" : "FAILED";
-        log.debug("Mock payment gateway status for method {}: {}", method, status);
-        return status;
-    }
-
-    public void updateOrderStatus(Long orderId, String status) {
-        String url = "http://ORDER-SERVICE/api/orders/" + orderId + "/status";
+    private void validateOrder(Long orderId) {
         try {
-            restTemplate.put(url, status);
-            log.info("Order status updated for orderId: {} with status: {}", orderId, status);
-        } catch (Exception e) {
-            log.error("Error updating order status for orderId: {}", orderId, e);
-            throw new RuntimeException("Failed to update order status for orderId: " + orderId);
+            restTemplate.getForObject(ORDER_SERVICE_BASE_URL + orderId, Object.class);
+            log.info("Order ID {} is valid", orderId);
+        }
+        catch (Exception ex) {
+            log.error("Invalid order ID: {}", orderId, ex);
+            throw new InvalidOrderException("Invalid order ID: "+orderId);
         }
     }
 
@@ -112,10 +102,19 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found for ID: " + paymentId));
 
-        payment.setStatus(status);
-        payment = paymentRepository.save(payment);
+        PaymentStatus parsedStatus = parsedPaymentStatus(status);
+        payment.setStatus(parsedStatus);
 
-        return paymentConverter.toDTO(payment);
+        return paymentConverter.toDTO(paymentRepository.save(payment));
+    }
+
+    private PaymentStatus parsedPaymentStatus(String status) {
+        try {
+            return PaymentStatus.valueOf(status.toUpperCase());
+        }
+        catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Invalid Payment Status: "+status);
+        }
     }
 
     @Override
@@ -143,25 +142,37 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentResponseDTO refundPayment(Long orderId) {
         log.info("Initiating refund for orderId: {}", orderId);
-        validateOrderId(orderId);
+        validateOrder(orderId);
         List<Payment> payments = paymentRepository.findByOrderId(orderId);
         if (payments.isEmpty()) {
             throw new ResourceNotFoundException("No payments found for Order ID: " + orderId);
         }
 
         Payment successfulPayment = payments.stream()
-                .filter(p -> "SUCCESS".equalsIgnoreCase(p.getStatus()))
+                .filter(p -> PaymentStatus.SUCCESS.equals(p.getStatus()))
                 .findFirst()
                 .orElseThrow(() ->
                         new ResourceNotFoundException("No successful payment found to refund for Order ID: " + orderId)
                 );
-        successfulPayment.setStatus("REFUNDED");
+
+
+        successfulPayment.setStatus(PaymentStatus.REFUNDED);
         paymentRepository.save(successfulPayment);
         log.info("Payment ID {} marked as REFUNDED", successfulPayment.getPaymentId());
 
         updateOrderStatus(orderId, "REFUNDED");
 
         return paymentConverter.toDTO(successfulPayment);
+    }
+
+    private void updateOrderStatus(Long orderId, String status) {
+        try {
+            restTemplate.put(ORDER_SERVICE_BASE_URL + orderId + "/status", status);
+            log.info("Order status updated for orderId: {} with status: {}", orderId, status);
+        } catch (Exception e) {
+            log.error("Error updating order status for orderId: {}", orderId, e);
+            throw new RuntimeException("Failed to update order status for orderId: " + orderId);
+        }
     }
 }
 
