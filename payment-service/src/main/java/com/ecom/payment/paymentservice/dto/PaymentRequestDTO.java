@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Positive;
 
 public class PaymentRequestDTO {
     @NotBlank(message = "Order ID must not be blank")
-    private String orderId;
+    private Long orderId;
 
     @NotNull(message = "Amount must not be null")
     @Positive(message = "Amount must be positive")
@@ -21,11 +21,11 @@ public class PaymentRequestDTO {
     @NotNull(message = "Method details must not be null")
     private PaymentMethodDetails methodDetails;
 
-    public String getOrderId() {
+    public Long getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(String orderId) {
+    public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
 

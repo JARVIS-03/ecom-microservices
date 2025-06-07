@@ -9,8 +9,10 @@ import com.ecom.payment.paymentservice.model.Payment;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
 import com.ecom.payment.paymentservice.utillity.PaymentConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
@@ -33,21 +35,13 @@ public class PaymentServiceImpl implements PaymentService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
+    @Transactional
     public PaymentResponseDTO initiatePayment(PaymentRequestDTO dto) {
         log.info("Initiating payment for orderId: {}", dto.getOrderId());
 
-//        String orderServiceUrl = "http://ORDER-SERVICE/api/orders/" + dto.getOrderId();
-//        try {
-//            restTemplate.getForObject(orderServiceUrl, Object.class);
-//            log.info("Order ID {} is valid", dto.getOrderId());
-//        } catch (Exception ex) {
-//            log.error("Invalid order ID: {}", dto.getOrderId(), ex);
-//            throw new InvalidOrderException("Invalid Order ID: " + dto.getOrderId());
-//        }
-//
-//        boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
-//                .anyMatch(payment -> "SUCCESS".equalsIgnoreCase(payment.getStatus()));
-        boolean hasSuccessfulPayment=false;
+        validateOrderId(dto.getOrderId());
+        boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
+               .anyMatch(payment -> "SUCCESS".equalsIgnoreCase(payment.getStatus()));
 
         if (hasSuccessfulPayment) {
             log.warn("Payment already completed for orderId: {}", dto.getOrderId());
@@ -82,13 +76,24 @@ public class PaymentServiceImpl implements PaymentService {
         return response;
     }
 
+    private void validateOrderId(Long orderId) {
+        String orderServiceUrl = "http://ORDER-SERVICE/api/order/" + orderId;
+        try {
+            restTemplate.getForObject(orderServiceUrl, Object.class);
+            log.info("Order ID {} is valid", orderId);
+        } catch (InvalidOrderException ex) {
+            log.error("Invalid order ID: {}", orderId, ex);
+            throw new InvalidOrderException("Invalid Order ID: " + orderId);
+        }
+    }
+
     private String mockPaymentGateway(String method) {
         String status = Math.random() > 0.2 ? "SUCCESS" : "FAILED";
         log.debug("Mock payment gateway status for method {}: {}", method, status);
         return status;
     }
 
-    public void updateOrderStatus(String orderId, String status) {
+    public void updateOrderStatus(Long orderId, String status) {
         String url = "http://ORDER-SERVICE/api/orders/" + orderId + "/status";
         try {
             restTemplate.put(url, status);
@@ -100,6 +105,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
     public PaymentResponseDTO updatePaymentStatus(Long paymentId, String status) {
         log.info("Updating payment status for ID: {} to {}", paymentId, status);
 
@@ -113,6 +119,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PaymentResponseDTO getPaymentById(Long id) {
         log.info("Fetching payment by ID: {}", id);
 
@@ -123,8 +130,8 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    @Transactional
-    public List<PaymentResponseDTO> getPaymentsByOrderId(String orderId) {
+    @Transactional(readOnly = true)
+    public List<PaymentResponseDTO> getPaymentsByOrderId(Long orderId) {
         log.info("Fetching all payments for Order ID: {}", orderId);
 
         return paymentRepository.findByOrderId(orderId).stream()
@@ -133,18 +140,10 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public PaymentResponseDTO refundPayment(String orderId) {
+    @Transactional
+    public PaymentResponseDTO refundPayment(Long orderId) {
         log.info("Initiating refund for orderId: {}", orderId);
-
-        String orderServiceUrl = "http://ORDER-SERVICE/api/orders/" + orderId;
-        try {
-            restTemplate.getForObject(orderServiceUrl, Object.class);
-            log.info("Order ID {} is valid", orderId);
-        } catch (Exception ex) {
-            log.error("Invalid order ID: {}", orderId, ex);
-            throw new InvalidOrderException("Invalid Order ID: " + orderId);
-        }
-
+        validateOrderId(orderId);
         List<Payment> payments = paymentRepository.findByOrderId(orderId);
         if (payments.isEmpty()) {
             throw new ResourceNotFoundException("No payments found for Order ID: " + orderId);
@@ -156,8 +155,6 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() ->
                         new ResourceNotFoundException("No successful payment found to refund for Order ID: " + orderId)
                 );
-
-
         successfulPayment.setStatus("REFUNDED");
         paymentRepository.save(successfulPayment);
         log.info("Payment ID {} marked as REFUNDED", successfulPayment.getPaymentId());

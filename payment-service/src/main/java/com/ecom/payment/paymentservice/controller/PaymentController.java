@@ -39,13 +39,13 @@ public class PaymentController {
 
 
     @PutMapping("/refund/{orderId}")
-    public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable String orderId) {
+    public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable Long orderId) {
         PaymentResponseDTO refundedPayment = paymentService.refundPayment(orderId);
         return ResponseEntity.ok(refundedPayment);
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<PaymentResponseDTO>> getByOrderId(@PathVariable String orderId) {
+    public ResponseEntity<List<PaymentResponseDTO>> getByOrderId(@PathVariable Long orderId) {
         log.info("Fetching all payments for Order ID: {}", orderId);
         List<PaymentResponseDTO> payments = paymentService.getPaymentsByOrderId(orderId);
         log.info("Total {} payments found for Order ID: {}", payments.size(), orderId);
