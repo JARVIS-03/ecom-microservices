@@ -9,6 +9,7 @@ import com.ecom.payment.paymentservice.model.Payment;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
 import com.ecom.payment.paymentservice.utillity.PaymentConverter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
