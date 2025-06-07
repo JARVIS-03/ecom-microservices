@@ -3,6 +3,7 @@ package com.ecom_microservices.notify_service.controller;
 import com.ecom_microservices.notify_service.dto.NotificationRequestDTO;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
 import com.ecom_microservices.notify_service.dto.OrderDTO;
+import com.ecom_microservices.notify_service.dto.PaymentDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.service.NotificationService;
@@ -56,7 +57,13 @@ public class NotificationController {
     	NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
-    
+    @PostMapping("/payment/send")
+    public ResponseEntity<NotificationResponseDTO> sendPaymentStatusNotification(@Valid @RequestBody PaymentDTO paymentDTO) {
+        logger.info("POST /api/notifications/payment/send - Sending notification to '{}'", paymentDTO.getUserEmail());
+        NotificationResponseDTO response = service.createPaymentStatusNotification(paymentDTO);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
     @GetMapping("/{id}/status")
     public ResponseEntity<String> getNotificationStatusById(@PathVariable Long id) {
         logger.info("GET /api/notifications/{}/status - Fetching notification status", id);
@@ -64,7 +71,6 @@ public class NotificationController {
         logger.info("Notification status for ID {} is '{}'", id, notification.getStatus());
         return ResponseEntity.ok(notification.getStatus().name());
     }
-
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByStatus(@PathVariable String status) {

@@ -375,6 +375,7 @@ public class NotificationService {
                     .scheduledTime(isHighOrderPriority(status)
                             ? null
                             : LocalDateTime.now().plusMinutes(5))
+                    .orderId(orderDTO.getOrderId())
                     .build();
 
         } catch (Exception ex) {
@@ -397,6 +398,7 @@ public class NotificationService {
                     .scheduledTime(isHighPaymentPriority(status)
                             ? null
                             : LocalDateTime.now().plusMinutes(5))
+                    .paymentId(paymentDTO.getPaymentId())
                     .build();
 
         } catch (Exception ex) {
