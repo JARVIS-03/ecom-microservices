@@ -4,13 +4,17 @@ import com.ecom_microservices.product_service.dto.ProductRequest;
 import com.ecom_microservices.product_service.dto.ProductResponse;
 import com.ecom_microservices.product_service.model.Product;
 import com.ecom_microservices.product_service.service.ProductService;
+import com.ecom_microservices.product_service.exception.ValidationException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/products")
@@ -58,26 +62,67 @@ public class ProductController {
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String category) {
+    public ResponseEntity<Map<String, Object>> getProductsByCategory(@PathVariable String category) {
         log.info("Received request to get products by category: {}", category);
         List<Product> products = productService.getProductsByCategory(category);
         log.info("Returning {} products for category: {}", products.size(), category);
-        return ResponseEntity.ok(products);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Products fetched successfully for category: " + category);
+        response.put("count", products.size());
+        response.put("data", products);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search/{keyword}")
-    public ResponseEntity<List<Product>> searchProductsByName(@PathVariable String keyword) {
+    public ResponseEntity<Map<String, Object>> searchProductsByName(@PathVariable String keyword) {
         log.info("Received request to search products with keyword: {}", keyword);
         List<Product> products = productService.searchProductsByName(keyword);
         log.info("Found {} products matching keyword: {}", products.size(), keyword);
-        return ResponseEntity.ok(products);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Products fetched successfully for keyword: " + keyword);
+        response.put("count", products.size());
+        response.put("data", products);
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String productId) {
+    public ResponseEntity<String> deleteProduct(@PathVariable String productId) {
         log.info("Received request to delete product with ID: {}", productId);
         productService.deleteProduct(productId);
         log.info("Deleted product with ID: {}", productId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Product deleted successfully with ID: " + productId);
+    }
+
+    @GetMapping("/price-range")
+    public ResponseEntity<List<ProductResponse>> getProductsByPriceRange(
+            @RequestParam @Min(value = 0, message = "minPrice must be zero or greater") double minPrice, 
+            @RequestParam @Min(value = 0, message = "maxPrice must be zero or greater") double maxPrice) {
+        log.info("Received request to get products by price range: {} - {}", minPrice, maxPrice);
+
+        if (minPrice > maxPrice) {
+            log.error("minPrice cannot be greater than maxPrice");
+            throw new ValidationException("minPrice cannot be greater than maxPrice");
+        }
+        
+        List<ProductResponse> productList = productService.getProductsByPriceRange(minPrice, maxPrice);
+        
+        log.info("Returning {} products within the price range", productList.size());
+        return ResponseEntity.ok(productList);
+    }
+
+    @GetMapping("/paginated")
+    public ResponseEntity<List<ProductResponse>> getPaginatedProducts(
+            @RequestParam @Min(value = 0, message = "Page number must be zero or greater") int page, 
+            @RequestParam @Positive(message = "Page size must be greater than zero") int size) {
+        log.info("Received request to get paginated products, page: {}, size: {}", page, size);
+        
+        List<ProductResponse> productList = productService.getPaginatedProducts(page, size);
+        
+        log.info("Returning page {} of products with size {}", page, productList.size());
+        return ResponseEntity.ok(productList);
     }
 }
