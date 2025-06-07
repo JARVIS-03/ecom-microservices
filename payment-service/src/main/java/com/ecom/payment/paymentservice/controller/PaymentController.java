@@ -5,57 +5,73 @@ import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
 import com.ecom.payment.paymentservice.service.PaymentService;
 import com.ecom.payment.paymentservice.validator.RequestValidator;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/payments")
+@RequestMapping("/api/payments")
+@Slf4j
 public class PaymentController {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PaymentController.class);
 
     @Autowired
     private PaymentService paymentService;
 
 
     @PostMapping("/initiate")
-    public ResponseEntity<PaymentResponseDTO> initiate(@Valid @RequestBody PaymentRequestDTO request) {
+    public ResponseEntity<PaymentResponseDTO> initiatePayment(@Valid @RequestBody PaymentRequestDTO request) {
+        log.info("Received payment initiation request: orderId = {}, method = {}", request.getOrderId(), request.getPaymentMethod());
         RequestValidator.validatePaymentDetails(request);
-        log.info("Initiating payment with payload: {}", request);
-        return new ResponseEntity<>(paymentService.initiatePayment(request), HttpStatus.OK);
+
+        PaymentResponseDTO response = paymentService.initiatePayment(request);
+        log.info("Payment initiated successfully: paymentId = {}, status = {}", response.getPaymentId(), response.getStatus());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getStatus(@PathVariable Long id) {
+    public ResponseEntity<String> getPaymentStatus(@PathVariable Long id) {
         log.info("Fetching payment status for ID: {}", id);
+
         String status = paymentService.getPaymentById(id).getStatus();
-        log.info("Payment status for ID {}: {}", id, status);
-        return new ResponseEntity<>(status, HttpStatus.OK);
+        log.info("Payment status fetched: ID = {}, status = {}", id, status);
+
+        return ResponseEntity.ok(status);
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<PaymentResponseDTO>> getByOrderId(@PathVariable String orderId) {
+    public ResponseEntity<List<PaymentResponseDTO>> getPaymentsByOrderId(@PathVariable String orderId) {
+        log.info("Fetching payments for order ID: {}", orderId);
         RequestValidator.validateRequestParam(orderId);
-        return new ResponseEntity<>(paymentService.getPaymentsByOrderId(orderId), HttpStatus.OK);
+
+        List<PaymentResponseDTO> listOfAllPayments = paymentService.getPaymentsByOrderId(orderId);
+        log.info("Payments fetched for order ID {}: count = {}", orderId, listOfAllPayments.size());
+
+        return ResponseEntity.ok(listOfAllPayments);
     }
 
     @PutMapping("/{id}/{status}")
-    public ResponseEntity<PaymentResponseDTO> paymentStatusUpdate(
+    public ResponseEntity<PaymentResponseDTO> updatePaymentStatus(
             @PathVariable Long id,
             @PathVariable String status) {
 
         log.info("Updating payment status. Payment ID: {}, New Status: {}", id, status);
+
         PaymentResponseDTO updatedPayment = paymentService.updatePaymentStatus(id, status);
-        log.info("Payment status updated. Updated payment: {}", updatedPayment);
+        log.info("Payment status updated successfully: Payment ID = {}, Update Status = {}", updatedPayment.getPaymentId(), updatedPayment.getStatus());
+
         return ResponseEntity.ok(updatedPayment);
     }
 
     @PutMapping("/refund/{orderId}")
     public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable String orderId) {
+        log.info("Initiating refund for orderId: {}", orderId);
+
         PaymentResponseDTO refundedPayment = paymentService.refundPayment(orderId);
+        log.info("Refund processed successfully: paymentId = {}, status = {}", refundedPayment.getPaymentId(), refundedPayment.getStatus());
+
         return ResponseEntity.ok(refundedPayment);
     }
 

@@ -27,7 +27,7 @@ public class RequestValidator {
     public static void validatePaymentDetails(PaymentRequestDTO request){
          if(request == null){
              log.error("Invalid Request - request is empty");
-             throw new PaymentProcessingException("Invalid Request");
+             throw new PaymentProcessingException("Request is empty");
          }
         if (!PaymentValidator.validate(request.getPaymentMethod(), request.getMethodDetails())) {
             log.error("Invalid Request - Invalid payment method details provided");
