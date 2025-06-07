@@ -28,6 +28,12 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "order_id", nullable = true)
+    private Long orderId;
+
+    @Column(name = "payment_id", nullable = true)
+    private Long paymentId;
+
     @NotBlank(message = "Recipient must not be empty")
     @Email(message = "Invalid email format") // Valid only for EMAIL type
     @Column(nullable = false)

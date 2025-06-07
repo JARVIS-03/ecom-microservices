@@ -16,6 +16,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final ModelMapper modelMapper;
 
+    private final RestTemplate restTemplate;
+
     @Override
     @Transactional
     @Retryable(
@@ -39,8 +42,11 @@ public class OrderServiceImpl implements OrderService {
             backoff = @Backoff(delay = 2000))
     public OrderResponse createOrder(OrderRequest orderRequest) {
         log.info("Creating a new order for customer: {}", orderRequest.getCustomerIdentifier());
-        Order order = modelMapper.map(orderRequest, Order.class);
 
+        for(OrderItem orderItems:orderRequest.getOrderItems())
+            validateProduct(orderItems.getProductId());
+
+        Order order = modelMapper.map(orderRequest, Order.class);
         order.setTotalQuantity(calculateTotalQuantity(orderRequest.getOrderItems()));
         order.setTotalAmount(calculateTotalAmount(orderRequest.getOrderItems()));
         order.setOrderStatus(OrderStatus.PROCESSING);
@@ -57,14 +63,8 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponse> getAllOrders() {
         log.info("Fetching all orders");
         List<OrderResponse> orderResponses=new ArrayList<>();
-
         for(Order order:orderRepository.findAll())
             orderResponses.add(modelMapper.map(order,OrderResponse.class));
-        if(orderResponses.isEmpty()) {
-            log.warn("No orders found");
-            throw new NullPointerException("No Orders Found");
-        }
-
         return orderResponses;
     }
 
@@ -138,13 +138,30 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(cancelledOrder,OrderResponse.class);
     }
 
+    private void validateProduct(String productId)
+    {
+        String productServiceUrl = "http://PRODUCT-SERVICE/api/products/" + productId;
+
+        try {
+            restTemplate.getForEntity(productServiceUrl, Void.class);
+            log.debug("Product ID {} is valid", productId);
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Error contacting Product Service for product ID " + productId + ": " + e.getMessage());
+        }
+    }
+
     private long calculateTotalAmount(List<OrderItem> orderItems)
     {
+        if(orderItems.isEmpty())
+            throw new NullPointerException("Order items are Empty");
         return orderItems.stream().mapToLong(item -> (long) item.getProductPrice() * item.getQuantity()).sum();
     }
 
     private int calculateTotalQuantity(List<OrderItem> orderItems)
     {
+        if(orderItems.isEmpty())
+            throw new NullPointerException("Order items are is Empty");
         return orderItems.stream().mapToInt(OrderItem::getQuantity).sum();
     }
 }

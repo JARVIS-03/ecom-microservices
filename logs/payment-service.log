@@ -1,0 +1,130 @@
+2025-06-04T12:06:39.241+05:30  INFO 21251 --- [paymentservice] [main] c.e.p.p.PaymentserviceApplication        : Starting PaymentserviceApplication using Java 24 with PID 21251 (/Users/nimishlohumi/Desktop/ecom-microservices/payment-service/target/classes started by nimishlohumi in /Users/nimishlohumi/Desktop/ecom-microservices)
+2025-06-04T12:06:39.244+05:30  INFO 21251 --- [paymentservice] [main] c.e.p.p.PaymentserviceApplication        : No active profile set, falling back to 1 default profile: "default"
+2025-06-04T12:06:39.533+05:30  INFO 21251 --- [paymentservice] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-04T12:06:39.560+05:30  INFO 21251 --- [paymentservice] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 22 ms. Found 1 JPA repository interface.
+2025-06-04T12:06:39.748+05:30  INFO 21251 --- [paymentservice] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+2025-06-04T12:06:39.755+05:30  INFO 21251 --- [paymentservice] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-04T12:06:39.755+05:30  INFO 21251 --- [paymentservice] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-06-04T12:06:39.776+05:30  INFO 21251 --- [paymentservice] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-04T12:06:39.776+05:30  INFO 21251 --- [paymentservice] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 509 ms
+2025-06-04T12:06:39.843+05:30  INFO 21251 --- [paymentservice] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-04T12:06:39.856+05:30  INFO 21251 --- [paymentservice] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-06-04T12:06:39.870+05:30  INFO 21251 --- [paymentservice] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-04T12:06:39.957+05:30  INFO 21251 --- [paymentservice] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-04T12:06:39.968+05:30  INFO 21251 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-06-04T12:06:40.044+05:30  INFO 21251 --- [paymentservice] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5f45bc8e
+2025-06-04T12:06:40.044+05:30  INFO 21251 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-04T12:06:40.067+05:30  INFO 21251 --- [paymentservice] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.5
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-06-04T12:06:40.316+05:30  INFO 21251 --- [paymentservice] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-04T12:06:40.339+05:30  INFO 21251 --- [paymentservice] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-04T12:06:40.495+05:30  WARN 21251 --- [paymentservice] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-04T12:06:40.639+05:30  WARN 21251 --- [paymentservice] [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-06-04T12:06:40.639+05:30  INFO 21251 --- [paymentservice] [main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-06-04T12:06:40.640+05:30  INFO 21251 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-06-04T12:06:40.641+05:30  INFO 21251 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-06-04T12:06:40.647+05:30  INFO 21251 --- [paymentservice] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-06-04T12:06:40.652+05:30 ERROR 21251 --- [paymentservice] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8082 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8082 or configure this application to listen on another port.
+
+2025-06-04T12:07:58.902+05:30  INFO 21288 --- [paymentservice] [main] c.e.p.p.PaymentserviceApplication        : Starting PaymentserviceApplication using Java 24 with PID 21288 (/Users/nimishlohumi/Desktop/ecom-microservices/payment-service/target/classes started by nimishlohumi in /Users/nimishlohumi/Desktop/ecom-microservices)
+2025-06-04T12:07:58.903+05:30  INFO 21288 --- [paymentservice] [main] c.e.p.p.PaymentserviceApplication        : No active profile set, falling back to 1 default profile: "default"
+2025-06-04T12:07:59.167+05:30  INFO 21288 --- [paymentservice] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-04T12:07:59.190+05:30  INFO 21288 --- [paymentservice] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 19 ms. Found 1 JPA repository interface.
+2025-06-04T12:07:59.361+05:30  INFO 21288 --- [paymentservice] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+2025-06-04T12:07:59.366+05:30  INFO 21288 --- [paymentservice] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-04T12:07:59.366+05:30  INFO 21288 --- [paymentservice] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-06-04T12:07:59.387+05:30  INFO 21288 --- [paymentservice] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-04T12:07:59.387+05:30  INFO 21288 --- [paymentservice] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 468 ms
+2025-06-04T12:07:59.455+05:30  INFO 21288 --- [paymentservice] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-04T12:07:59.468+05:30  INFO 21288 --- [paymentservice] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-06-04T12:07:59.483+05:30  INFO 21288 --- [paymentservice] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-04T12:07:59.566+05:30  INFO 21288 --- [paymentservice] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-04T12:07:59.574+05:30  INFO 21288 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-06-04T12:07:59.639+05:30  INFO 21288 --- [paymentservice] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5f45bc8e
+2025-06-04T12:07:59.639+05:30  INFO 21288 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-04T12:07:59.665+05:30  INFO 21288 --- [paymentservice] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.5
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-06-04T12:07:59.893+05:30  INFO 21288 --- [paymentservice] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-04T12:07:59.915+05:30  INFO 21288 --- [paymentservice] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-04T12:08:00.064+05:30  WARN 21288 --- [paymentservice] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-04T12:08:00.208+05:30  WARN 21288 --- [paymentservice] [main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-06-04T12:08:00.209+05:30  INFO 21288 --- [paymentservice] [main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-06-04T12:08:00.209+05:30  INFO 21288 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-06-04T12:08:00.211+05:30  INFO 21288 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-06-04T12:08:00.218+05:30  INFO 21288 --- [paymentservice] [main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-06-04T12:08:00.222+05:30 ERROR 21288 --- [paymentservice] [main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Web server failed to start. Port 8082 was already in use.
+
+Action:
+
+Identify and stop the process that's listening on port 8082 or configure this application to listen on another port.
+
+2025-06-04T12:08:17.011+05:30  INFO 21308 --- [paymentservice] [main] c.e.p.p.PaymentserviceApplication        : Starting PaymentserviceApplication using Java 24 with PID 21308 (/Users/nimishlohumi/Desktop/ecom-microservices/payment-service/target/classes started by nimishlohumi in /Users/nimishlohumi/Desktop/ecom-microservices)
+2025-06-04T12:08:17.012+05:30  INFO 21308 --- [paymentservice] [main] c.e.p.p.PaymentserviceApplication        : No active profile set, falling back to 1 default profile: "default"
+2025-06-04T12:08:17.279+05:30  INFO 21308 --- [paymentservice] [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-04T12:08:17.300+05:30  INFO 21308 --- [paymentservice] [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 18 ms. Found 1 JPA repository interface.
+2025-06-04T12:08:17.477+05:30  INFO 21308 --- [paymentservice] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8111 (http)
+2025-06-04T12:08:17.482+05:30  INFO 21308 --- [paymentservice] [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-04T12:08:17.482+05:30  INFO 21308 --- [paymentservice] [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-06-04T12:08:17.500+05:30  INFO 21308 --- [paymentservice] [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-04T12:08:17.500+05:30  INFO 21308 --- [paymentservice] [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 471 ms
+2025-06-04T12:08:17.567+05:30  INFO 21308 --- [paymentservice] [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-04T12:08:17.579+05:30  INFO 21308 --- [paymentservice] [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-06-04T12:08:17.593+05:30  INFO 21308 --- [paymentservice] [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-04T12:08:17.671+05:30  INFO 21308 --- [paymentservice] [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-04T12:08:17.680+05:30  INFO 21308 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-06-04T12:08:17.746+05:30  INFO 21308 --- [paymentservice] [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@844e66d
+2025-06-04T12:08:17.746+05:30  INFO 21308 --- [paymentservice] [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-04T12:08:17.769+05:30  INFO 21308 --- [paymentservice] [main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.5
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-06-04T12:08:18.006+05:30  INFO 21308 --- [paymentservice] [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-04T12:08:18.028+05:30  INFO 21308 --- [paymentservice] [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-04T12:08:18.178+05:30  WARN 21308 --- [paymentservice] [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-04T12:08:18.325+05:30  INFO 21308 --- [paymentservice] [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8111 (http) with context path '/'
+2025-06-04T12:08:18.331+05:30  INFO 21308 --- [paymentservice] [main] c.e.p.p.PaymentserviceApplication        : Started PaymentserviceApplication in 1.53 seconds (process running for 1.653)
+2025-06-04T12:12:08.730+05:30  INFO 21308 --- [paymentservice] [SpringApplicationShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-06-04T12:12:08.735+05:30  INFO 21308 --- [paymentservice] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-06-04T12:12:08.738+05:30  INFO 21308 --- [paymentservice] [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-06-04T12:12:08.739+05:30  INFO 21308 --- [paymentservice] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-06-04T12:12:08.741+05:30  INFO 21308 --- [paymentservice] [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

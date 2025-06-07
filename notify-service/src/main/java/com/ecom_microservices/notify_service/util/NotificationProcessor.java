@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
+import com.ecom_microservices.notify_service.exception.NotificationProcessingException;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.repository.NotificationRepository;
 import com.ecom_microservices.notify_service.service.NotificationService;
@@ -60,6 +61,10 @@ public class NotificationProcessor {
                 emailSender.send(notification);
            } catch (Exception e) {
                 logger.error("Failed to send notification for recipient {}: {}", notification.getRecipient(), e.getMessage());
+                throw new NotificationProcessingException(
+                    String.format("Failed to send notification for recipient %s: %s", notification.getRecipient(), e.getMessage())
+                );
+                
             }
         }
     }
