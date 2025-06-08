@@ -3,7 +3,6 @@ package com.ecom.payment.paymentservice.controller;
 import com.ecom.payment.paymentservice.dto.PaymentRequestDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
 import com.ecom.payment.paymentservice.service.PaymentService;
-import com.ecom.payment.paymentservice.service.PaymentServiceImpl;
 import com.ecom.payment.paymentservice.validator.RequestValidator;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -21,15 +20,14 @@ import java.util.List;
 public class PaymentController {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
-
     @Autowired
     private PaymentService paymentService;
 
 
     @PostMapping("/initiate")
-    public ResponseEntity<PaymentResponseDTO> initiatePayment( @RequestBody PaymentRequestDTO request) {
+    public ResponseEntity<PaymentResponseDTO> initiatePayment(@RequestBody PaymentRequestDTO request) {
         log.info("Received payment initiation request: orderId = {}, method = {}", request.getOrderId(), request.getPaymentMethod());
-        RequestValidator.validatePaymentDetails(request);
+//        RequestValidator.validatePaymentDetails(request);
 
         PaymentResponseDTO response = paymentService.initiatePayment(request);
         log.info("Payment initiated successfully: paymentId = {}, status = {}", response.getPaymentId(), response.getStatus());
