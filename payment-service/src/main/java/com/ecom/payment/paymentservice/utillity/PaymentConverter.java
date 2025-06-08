@@ -16,7 +16,7 @@ public class PaymentConverter {
         dto.setPaymentId(payment.getPaymentId());
         dto.setOrderId(payment.getOrderId());
         dto.setAmount(payment.getAmount());
-        dto.setStatus(payment.getStatus());
+        dto.setStatus(payment.getStatus().name());
         dto.setPaymentMethod(payment.getPaymentMethod());
         dto.setDate(payment.getDate());
 

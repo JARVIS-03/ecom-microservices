@@ -2,14 +2,16 @@ package com.ecom.payment.paymentservice.utillity;
 
 import com.ecom.payment.paymentservice.model.Payment;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 public class PaymentGatewaySimulator {
+    private static final Logger log = LoggerFactory.getLogger(PaymentGatewaySimulator.class);
     @Retryable(
             retryFor = RuntimeException.class,
             maxAttempts = 3,

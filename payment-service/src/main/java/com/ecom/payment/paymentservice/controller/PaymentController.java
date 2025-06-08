@@ -6,6 +6,8 @@ import com.ecom.payment.paymentservice.service.PaymentService;
 import com.ecom.payment.paymentservice.validator.RequestValidator;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,17 +16,18 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/payments")
-@Slf4j
+//@Slf4j
 public class PaymentController {
 
+    private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
     @Autowired
     private PaymentService paymentService;
 
 
     @PostMapping("/initiate")
-    public ResponseEntity<PaymentResponseDTO> initiatePayment(@Valid @RequestBody PaymentRequestDTO request) {
+    public ResponseEntity<PaymentResponseDTO> initiatePayment(@RequestBody PaymentRequestDTO request) {
         log.info("Received payment initiation request: orderId = {}, method = {}", request.getOrderId(), request.getPaymentMethod());
-        RequestValidator.validatePaymentDetails(request);
+//        RequestValidator.validatePaymentDetails(request);
 
         PaymentResponseDTO response = paymentService.initiatePayment(request);
         log.info("Payment initiated successfully: paymentId = {}, status = {}", response.getPaymentId(), response.getStatus());
@@ -42,9 +45,9 @@ public class PaymentController {
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<PaymentResponseDTO>> getPaymentsByOrderId(@PathVariable String orderId) {
+    public ResponseEntity<List<PaymentResponseDTO>> getPaymentsByOrderId(@PathVariable Long orderId) {
         log.info("Fetching payments for order ID: {}", orderId);
-        RequestValidator.validateRequestParam(orderId);
+//        RequestValidator.validateRequestParam(orderId);
 
         List<PaymentResponseDTO> listOfAllPayments = paymentService.getPaymentsByOrderId(orderId);
         log.info("Payments fetched for order ID {}: count = {}", orderId, listOfAllPayments.size());
@@ -66,7 +69,7 @@ public class PaymentController {
     }
 
     @PutMapping("/refund/{orderId}")
-    public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable String orderId) {
+    public ResponseEntity<PaymentResponseDTO> refundPayment(@PathVariable Long orderId) {
         log.info("Initiating refund for orderId: {}", orderId);
 
         PaymentResponseDTO refundedPayment = paymentService.refundPayment(orderId);

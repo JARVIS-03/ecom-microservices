@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class PaymentResponseDTO {
     private Long paymentId;
-    private String orderId;
+    private Long orderId;
     private Double amount;
     private String status;
     private String paymentMethod;
@@ -19,11 +19,11 @@ public class PaymentResponseDTO {
         this.paymentId = paymentId;
     }
 
-    public String getOrderId() {
+    public Long getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(String orderId) {
+    public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
 
