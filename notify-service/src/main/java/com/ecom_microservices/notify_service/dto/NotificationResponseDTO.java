@@ -15,7 +15,6 @@ public class NotificationResponseDTO {
     private String notificationType;
     private String priority;
     private String status;
-//   / private LocalDateTime scheduledTime;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

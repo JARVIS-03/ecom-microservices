@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 @Entity
 @Table(name = "products")
@@ -20,6 +21,8 @@ public class Product {
 
     @NotBlank(message = "Product ID is mandatory")
     @Column(unique = true, nullable = false)
+    @Length(min = 5, max = 10, message = "Product ID must be between 5 and 10 characters")
+    @Pattern(regexp = "^[A-Za-z0-9]+$", message = "Product ID must be alphanumeric")
     private String productId;
 
     @NotBlank(message = "Product name is mandatory")
@@ -31,5 +34,9 @@ public class Product {
     @NotBlank(message = "Category is mandatory")
     private String category;
 
-    private boolean available;
+    @Min(value = 0, message = "Quantity must be zero or greater")
+    private int quantity;
+
+    public Product(long l, String p100, String laptop, double v, String electronics, boolean b) {
+    }
 }

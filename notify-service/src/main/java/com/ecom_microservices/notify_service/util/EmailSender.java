@@ -1,11 +1,8 @@
 package com.ecom_microservices.notify_service.util;
 
-import java.time.LocalDateTime;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.retry.annotation.Backoff;
@@ -17,8 +14,6 @@ import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.repository.NotificationRepository;
 import com.ecom_microservices.notify_service.service.NotificationService;
-
-import jakarta.mail.SendFailedException;
 
 @Component
 public class EmailSender {
@@ -45,7 +40,6 @@ public class EmailSender {
 	            
 	        logger.info("Notification(Email) sent successfully for id: "+notification.getId());
 	        notification.setStatus(NotificationStatus.SENT);
-//	        notification.setUpdatedTimestamp(LocalDateTime.now());
 	        notificationRepository.save(notification);
 		 }
 		 catch (Exception ex) {

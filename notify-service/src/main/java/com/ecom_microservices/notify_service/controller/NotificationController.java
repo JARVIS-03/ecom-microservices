@@ -3,6 +3,7 @@ package com.ecom_microservices.notify_service.controller;
 import com.ecom_microservices.notify_service.dto.NotificationRequestDTO;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
 import com.ecom_microservices.notify_service.dto.OrderDTO;
+import com.ecom_microservices.notify_service.dto.PaymentDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.service.NotificationService;
@@ -34,16 +35,35 @@ public class NotificationController {
     public ResponseEntity<NotificationResponseDTO> sendNotification(@Valid @RequestBody NotificationRequestDTO requestDTO) {
     	logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
         NotificationResponseDTO responseDTO = service.createNotification(requestDTO);
-        logger.info("Notification sent successfully with ID {}", responseDTO.getId());
+        logger.info("Notification created successfully with ID {}", responseDTO.getId());
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
+    }
+    
+    @PostMapping("/schedule")
+    public ResponseEntity<?> scheduleNotification(@Valid @RequestBody NotificationRequestDTO requestDTO,
+            @RequestParam("datetime") @DateTimeFormat(pattern = "dd-MM-yyyy-HH-mm-ss") LocalDateTime datetime) {
+    	if (datetime.isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest().body("Scheduled datetime must be in the future.");
+        }
+    	logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
+        NotificationResponseDTO responseDTO = service.scheduleNotification(requestDTO, datetime);
+        logger.info("Notification scheduled successfully with ID {}", responseDTO.getId());
+        return ResponseEntity.ok(responseDTO);
     }
     
     @PostMapping("/order/send")
     public ResponseEntity<NotificationResponseDTO> sendOrderStatusNotification(@Valid @RequestBody OrderDTO orderDTO) {
-        NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
+    	logger.info("POST /api/notifications/order/send - Sending notification to '{}'", orderDTO.getUserEmail());
+    	NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
-    
+    @PostMapping("/payment/send")
+    public ResponseEntity<NotificationResponseDTO> sendPaymentStatusNotification(@Valid @RequestBody PaymentDTO paymentDTO) {
+        logger.info("POST /api/notifications/payment/send - Sending notification to '{}'", paymentDTO.getUserEmail());
+        NotificationResponseDTO response = service.createPaymentStatusNotification(paymentDTO);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
     @GetMapping("/{id}/status")
     public ResponseEntity<String> getNotificationStatusById(@PathVariable Long id) {
         logger.info("GET /api/notifications/{}/status - Fetching notification status", id);
@@ -52,23 +72,15 @@ public class NotificationController {
         return ResponseEntity.ok(notification.getStatus().name());
     }
 
-
     @GetMapping("/status/{status}")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByStatus(@PathVariable String status) {
         logger.info("GET /api/notifications/status/{} - Fetching notifications by status", status);
         NotificationStatus notificationStatus;
-
-        try {
-            notificationStatus = NotificationStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            logger.warn("Invalid notification status received: {}", status);
-            return ResponseEntity.badRequest().build(); // invalid status string
-        }
+        notificationStatus = NotificationStatus.valueOf(status.toUpperCase());
         List<Notification> notifications = service.getNotificationsByStatus(notificationStatus);
         List<NotificationResponseDTO> dtoList = notifications.stream()
                 .map(this::toResponseDto)
                 .collect(Collectors.toList());
-
         if (dtoList.isEmpty()) {
             logger.info("No notifications found with status '{}'", status);
             return ResponseEntity.noContent().build();
@@ -77,8 +89,6 @@ public class NotificationController {
         return ResponseEntity.ok(dtoList);
     }
 
-
-    // New GET endpoint: By Recipient
     @GetMapping("/recipient/{recipient}")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByRecipient(@PathVariable String recipient) {
         logger.info("Received request to fetch notifications for recipient: {}", recipient);
@@ -91,6 +101,7 @@ public class NotificationController {
         logger.info("Returning {} notifications for recipient: {}", dtoList.size(), recipient);
         return ResponseEntity.ok(dtoList);
     }
+    
     @GetMapping("/date-range")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,

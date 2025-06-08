@@ -10,6 +10,6 @@ public interface PaymentService {
     PaymentResponseDTO initiatePayment(PaymentRequestDTO requestDTO);
     PaymentResponseDTO updatePaymentStatus(Long paymentId, String status);
     PaymentResponseDTO getPaymentById(Long id);
-    List<PaymentResponseDTO> getPaymentsByOrderId(String orderId);
-
+    List<PaymentResponseDTO> getPaymentsByOrderId(Long orderId);
+    PaymentResponseDTO refundPayment(Long orderId);
 }

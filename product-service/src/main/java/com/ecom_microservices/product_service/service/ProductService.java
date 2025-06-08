@@ -15,16 +15,23 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+
+    public ProductService(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     private static final List<String> ALLOWED_CATEGORIES = Arrays.asList(
             "Electronics", "Books", "Clothing", "Home"
@@ -35,6 +42,7 @@ public class ProductService {
             backoff = @Backoff(delay = 2000),
             exclude = ProductNotFoundException.class
     )
+
     @Transactional(readOnly = true)
     public ProductResponse getProductById(String productId) {
         log.debug("Attempting to fetch product with ID: {}", productId);
@@ -48,10 +56,20 @@ public class ProductService {
         log.info("Product found with ID: {}", productId);
         return mapToProductResponse(product);
     }
-//
-//    public List<Product> getAllProducts() {
-//        return this.productRepository.findAll();
-//    }
+
+    @Recover
+    public ProductResponse recover(Exception ex, String productId) {
+        log.error("Failed to fetch product with ID: {} after retries. Reason: {}", productId, ex.getMessage());
+
+        ProductResponse fallback = new ProductResponse();
+        fallback.setProductId(productId);
+        fallback.setName("Unavailable");
+        fallback.setPrice(0.0);
+        fallback.setCategory("Unknown");
+        fallback.setQuantity(0);
+
+        return fallback;
+    }
 
     @Retryable(
             value = { RuntimeException.class },
@@ -63,7 +81,7 @@ public class ProductService {
 
         List<Product> products = productRepository.findAll();
 
-        if (products == null || products.isEmpty()) {
+        if (products.isEmpty()) {
             log.warn("Product list is empty, triggering retry...");
             throw new RuntimeException("Product list is empty, retrying...");
         }
@@ -78,19 +96,6 @@ public class ProductService {
         return List.of();
     }
 
-
-    private ProductResponse mapToProductResponse(Product product) {
-        return ProductResponse.builder()
-                .productId(product.getProductId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .category(product.getCategory())
-                .available(product.isAvailable())
-                .build();
-    }
-
-
-
     @Transactional(readOnly = true)
     public List<Product> searchProductsByName(String keyword) {
         return productRepository.findByNameContainingIgnoreCase(keyword);
@@ -102,22 +107,26 @@ public class ProductService {
         }
         return productRepository.findByCategory(category);
     }
-      @Transactional
+    @Transactional
     public ProductResponse updateProduct(String productId, ProductRequest productRequest) {
         validateProductRequest(productRequest);
 
+        if (!productId.equals(productRequest.getProductId())) {
+            throw new ValidationException("Product ID in path and body must match");
+        }
+
         Product existingProduct = productRepository.findByProductId(productId)
-                .orElseThrow(() -> new ProductNotFoundException(
-                        "Product not found with ID: " + productId
-                ));
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
 
         updateProductDetails(existingProduct, productRequest);
-        Product updatedProduct = productRepository.save(existingProduct);
 
+        Product updatedProduct = productRepository.save(existingProduct);
         log.info("Product updated successfully with ID: {}", productId);
+
         return mapToProductResponse(updatedProduct);
     }
-     @Transactional
+
+    @Transactional
     public ProductResponse createProduct(ProductRequest productRequest) {
         validateProductRequest(productRequest);
 
@@ -133,9 +142,41 @@ public class ProductService {
         log.info("Product created successfully with ID: {}", product.getProductId());
         return mapToProductResponse(product);
     }
+
+    @Transactional
+    public void deleteProduct(String productId) {
+        if (!productRepository.existsByProductId(productId)) {
+            throw new ProductNotFoundException(
+                    "Product not found with ID: " + productId
+            );
+        }
+
+        productRepository.deleteByProductId(productId);
+        log.info("Product deleted successfully with ID: {}", productId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getProductsByPriceRange(double minPrice, double maxPrice) {
+        log.debug("Fetching products with price between {} and {}", minPrice, maxPrice);
+        
+        List<Product> productList = productRepository.findByPriceBetween(minPrice, maxPrice);
+        
+        return productList.stream().map(product -> mapToProductResponse(product)).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getPaginatedProducts(int page, int size) {
+        log.debug("Fetching paginated products with page: {}, size: {}", page, size);
+        
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Product> productPage = productRepository.findAll(pageable);
+        
+        return productPage.getContent().stream().map(product -> mapToProductResponse(product)).collect(Collectors.toList());
+    }
+
     private void validateProductRequest(ProductRequest request) {
-        if (!request.getAvailable()) {
-            throw new ValidationException("Product must be available to be saved");
+        if (request.getQuantity() < 0) {
+            throw new ValidationException("Quantity must be zero or greater");
         }
 
         if (!ALLOWED_CATEGORIES.contains(request.getCategory())) {
@@ -148,7 +189,7 @@ public class ProductService {
                 .name(request.getName())
                 .price(request.getPrice())
                 .category(request.getCategory())
-                .available(request.getAvailable())
+                .quantity(request.getQuantity())
                 .build();
     }
 
@@ -156,7 +197,17 @@ public class ProductService {
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setCategory(request.getCategory());
-        product.setAvailable(request.getAvailable());
+        product.setQuantity(request.getQuantity());
+    }
+
+    private ProductResponse mapToProductResponse(Product product) {
+        return ProductResponse.builder()
+                .productId(product.getProductId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .category(product.getCategory())
+                .quantity(product.getQuantity())
+                .build();
     }
 
     
