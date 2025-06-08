@@ -2,7 +2,6 @@ package com.ecom.payment.paymentservice.utility;
 
 import com.ecom.payment.paymentservice.dto.*;
 import com.ecom.payment.paymentservice.model.Payment;
-import com.ecom.payment.paymentservice.utillity.PaymentConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

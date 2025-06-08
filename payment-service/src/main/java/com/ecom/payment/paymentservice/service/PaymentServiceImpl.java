@@ -5,31 +5,42 @@ import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
 import com.ecom.payment.paymentservice.enums.PaymentStatus;
 import com.ecom.payment.paymentservice.exception.InvalidOrderException;
 import com.ecom.payment.paymentservice.exception.ResourceNotFoundException;
-import com.ecom.payment.paymentservice.mapper.PaymentRequestDTOtoPaymentMapper;
 import com.ecom.payment.paymentservice.model.Payment;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
-import com.ecom.payment.paymentservice.utillity.PaymentConverter;
 import com.ecom.payment.paymentservice.utillity.PaymentGatewaySimulator;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.ecom.payment.paymentservice.utillity.PaymentMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
-import java.time.LocalDateTime;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
-@RequiredArgsConstructor
+//@Slf4j
+//@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-    private final PaymentRepository paymentRepository;
-    private final RestTemplate restTemplate;
-    private final PaymentConverter paymentConverter;
+    private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
+//    private final PaymentRepository paymentRepository;
+//    private final RestTemplate restTemplate;
+//    private final PaymentMapper paymentMapper;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private PaymentMapper paymentMapper;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String ORDER_SERVICE_BASE_URL = "http://ORDER-SERVICE/api/orders/";
@@ -39,48 +50,27 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDTO initiatePayment(PaymentRequestDTO dto) {
         log.info("Initiating payment for orderId: {}", dto.getOrderId());
 
-        validateOrder(dto.getOrderId());
-        boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
-               .anyMatch(payment -> PaymentStatus.SUCCESS.equals(payment.getStatus()));
+//        validateOrder(dto.getOrderId());
+//        boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
+//               .anyMatch(payment -> PaymentStatus.SUCCESS.equals(payment.getStatus()));
+
+        boolean hasSuccessfulPayment=false;
 
         if (hasSuccessfulPayment) {
             log.warn("Payment already completed for orderId: {}", dto.getOrderId());
             throw new IllegalStateException("Payment already completed for order ID: " + dto.getOrderId());
         }
 
-        Payment payment = buildPaymentEntity(dto);
-        payment = paymentRepository.save(payment);
-        log.info("Payment saved with ID: {}", payment.getPaymentId());
+        Payment payment = paymentMapper.toEntity(dto);
 
         String result = PaymentGatewaySimulator.simulate(dto.getPaymentMethod());
         log.info("Payment gateway result for method {}: {}", dto.getPaymentMethod(), result);
 
-        PaymentResponseDTO response = updatePaymentStatus(payment.getPaymentId(), result);
+        payment.setStatus(parsedPaymentStatus(result));
+        PaymentResponseDTO response = paymentMapper.toDto(paymentRepository.save(payment));
         log.info("Final payment response after status update: {}", response);
 
-        return response;
-    }
-
-    private Payment buildPaymentEntity(PaymentRequestDTO dto) {
-
-        // Should be changed using ModelMapper
-        Payment payment = new Payment();
-        payment.setOrderId(dto.getOrderId());
-        payment.setAmount(dto.getAmount());
-        payment.setPaymentMethod(dto.getPaymentMethod());
-        payment.setStatus(PaymentStatus.INITIATED);
-        payment.setDate(LocalDateTime.now());
-
-        try {
-            String methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
-            payment.setPaymentDetails(methodDetails);
-            log.debug("Serialized method details: {}", methodDetails);
-        } catch (JsonProcessingException e) {
-            log.error("Error serializing method details", e);
-            throw new IllegalStateException("Failed to serialize payment method details");
-        }
-
-        return payment;
+        return paymentMapper.toDto(payment);
     }
 
     private void validateOrder(Long orderId) {
@@ -105,7 +95,7 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentStatus parsedStatus = parsedPaymentStatus(status);
         payment.setStatus(parsedStatus);
 
-        return paymentConverter.toDTO(paymentRepository.save(payment));
+        return paymentMapper.toDto(paymentRepository.save(payment));
     }
 
     private PaymentStatus parsedPaymentStatus(String status) {
@@ -125,7 +115,7 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found for ID: " + id));
 
-        return paymentConverter.toDTO(payment);
+        return paymentMapper.toDto(payment);
     }
 
     @Override
@@ -134,7 +124,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Fetching all payments for Order ID: {}", orderId);
 
         return paymentRepository.findByOrderId(orderId).stream()
-                .map(paymentConverter::toDTO)
+                .map(paymentMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -162,7 +152,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         updateOrderStatus(orderId, "REFUNDED");
 
-        return paymentConverter.toDTO(successfulPayment);
+        return paymentMapper.toDto(successfulPayment);
     }
 
     private void updateOrderStatus(Long orderId, String status) {
