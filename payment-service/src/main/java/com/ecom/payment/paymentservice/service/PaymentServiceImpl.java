@@ -8,6 +8,7 @@ import com.ecom.payment.paymentservice.exception.ResourceNotFoundException;
 import com.ecom.payment.paymentservice.mapper.PaymentRequestDTOtoPaymentMapper;
 import com.ecom.payment.paymentservice.model.Payment;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
+import com.ecom.payment.paymentservice.retry.RetryLogger;
 import com.ecom.payment.paymentservice.utillity.PaymentConverter;
 import com.ecom.payment.paymentservice.utillity.PaymentGatewaySimulator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,6 +16,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +36,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final RestTemplate restTemplate;
     private final PaymentConverter paymentConverter;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final PaymentGatewaySimulator paymentGatewaySimulator;
+    private final RetryLogger retryLogger;
 
     private static final String ORDER_SERVICE_BASE_URL = "http://ORDER-SERVICE/api/orders/";
 
@@ -50,16 +57,33 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment payment = buildPaymentEntity(dto);
-        payment = paymentRepository.save(payment);
+        payment = savePaymentWithRetry(payment);
         log.info("Payment saved with ID: {}", payment.getPaymentId());
 
-        String result = PaymentGatewaySimulator.simulate(dto.getPaymentMethod());
+        String result = paymentGatewaySimulator.simulate(dto.getPaymentMethod());
         log.info("Payment gateway result for method {}: {}", dto.getPaymentMethod(), result);
 
         PaymentResponseDTO response = updatePaymentStatus(payment.getPaymentId(), result);
         log.info("Final payment response after status update: {}", response);
 
         return response;
+    }
+
+    @Retryable(
+            retryFor = DataAccessException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000),
+            listeners = "retryLogger"
+    )
+    public Payment savePaymentWithRetry(Payment payment) {
+        log.info("Attempting to save payment with orderID: {}", payment.getOrderId());
+        return paymentRepository.save(payment);
+    }
+
+    @Recover
+    public Payment recoverSavePayment(DataAccessException ex, Payment payment) {
+        log.error("Failed to save payment after retries for orderID: {}", payment.getOrderId(), ex);
+        throw new IllegalStateException("Could not save payment after retries");
     }
 
     private Payment buildPaymentEntity(PaymentRequestDTO dto) {
