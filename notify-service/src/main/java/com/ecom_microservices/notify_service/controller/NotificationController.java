@@ -7,6 +7,8 @@ import com.ecom_microservices.notify_service.dto.PaymentDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.service.NotificationService;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,7 @@ public class NotificationController {
     }
 
     @PostMapping("/send")
+    @CircuitBreaker(name = "StatusService", fallbackMethod = "circuitBreakerFallback")
     public ResponseEntity<NotificationResponseDTO> sendNotification(@Valid @RequestBody NotificationRequestDTO requestDTO) {
     	logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
         NotificationResponseDTO responseDTO = service.createNotification(requestDTO);
@@ -40,6 +43,7 @@ public class NotificationController {
     }
     
     @PostMapping("/schedule")
+    @CircuitBreaker(name = "StatusService", fallbackMethod = "circuitBreakerFallback")
     public ResponseEntity<?> scheduleNotification(@Valid @RequestBody NotificationRequestDTO requestDTO,
             @RequestParam("datetime") @DateTimeFormat(pattern = "dd-MM-yyyy-HH-mm-ss") LocalDateTime datetime) {
     	if (datetime.isBefore(LocalDateTime.now())) {
@@ -52,12 +56,15 @@ public class NotificationController {
     }
     
     @PostMapping("/order/send")
+    @CircuitBreaker(name = "OrderService", fallbackMethod = "orderStatusServiceFallback")
     public ResponseEntity<NotificationResponseDTO> sendOrderStatusNotification(@Valid @RequestBody OrderDTO orderDTO) {
     	logger.info("POST /api/notifications/order/send - Sending notification to '{}'", orderDTO.getUserEmail());
     	NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
+    
     @PostMapping("/payment/send")
+    @CircuitBreaker(name = "PaymentService", fallbackMethod = "paymentStatusServiceFallback")
     public ResponseEntity<NotificationResponseDTO> sendPaymentStatusNotification(@Valid @RequestBody PaymentDTO paymentDTO) {
         logger.info("POST /api/notifications/payment/send - Sending notification to '{}'", paymentDTO.getUserEmail());
         NotificationResponseDTO response = service.createPaymentStatusNotification(paymentDTO);
@@ -65,6 +72,7 @@ public class NotificationController {
     }
 
     @GetMapping("/{id}/status")
+    @CircuitBreaker(name = "StatusService", fallbackMethod = "circuitBreakerFallback")
     public ResponseEntity<String> getNotificationStatusById(@PathVariable Long id) {
         logger.info("GET /api/notifications/{}/status - Fetching notification status", id);
         Notification notification = service.getNotificationById(id); // will throw if not found
@@ -73,6 +81,7 @@ public class NotificationController {
     }
 
     @GetMapping("/status/{status}")
+    @CircuitBreaker(name = "StatusService", fallbackMethod = "circuitBreakerFallback")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByStatus(@PathVariable String status) {
         logger.info("GET /api/notifications/status/{} - Fetching notifications by status", status);
         NotificationStatus notificationStatus;
@@ -90,6 +99,7 @@ public class NotificationController {
     }
 
     @GetMapping("/recipient/{recipient}")
+    @CircuitBreaker(name = "StatusService", fallbackMethod = "circuitBreakerFallback")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByRecipient(@PathVariable String recipient) {
         logger.info("Received request to fetch notifications for recipient: {}", recipient);
         List<Notification> notifications = service.getNotificationsByRecipient(recipient);
@@ -103,6 +113,7 @@ public class NotificationController {
     }
     
     @GetMapping("/date-range")
+    @CircuitBreaker(name = "StatusService", fallbackMethod = "circuitBreakerFallback")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
@@ -115,6 +126,25 @@ public class NotificationController {
         }
         logger.info("Returning {} notifications between {} and {}", dto.size(), startDate, endDate);
         return ResponseEntity.ok(dto);
+    }
+    
+    private ResponseEntity<String> circuitBreakerFallback(Exception e){
+    	logger.error("Fallback method called with message : " +e.getMessage());
+    	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Server is Currently Down! Please be patience will be back soon.");
+    }
+    
+    private ResponseEntity<NotificationResponseDTO> orderStatusServiceFallback(OrderDTO dto, Throwable t) {
+        logger.error("Order fallback triggered: {}", t.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                             .body(new NotificationResponseDTO(null, dto.getUserEmail(), "Order notification failed! Please try after some time", 
+                                                               "EMAIL", "LOW", "FAILED", null, null));
+    }
+    
+    private ResponseEntity<NotificationResponseDTO> paymentStatusServiceFallback(PaymentDTO dto, Throwable t) {
+        logger.error("Order fallback triggered: {}", t.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                             .body(new NotificationResponseDTO(null, dto.getUserEmail(), "Payment notification failed! Please try after some time", 
+                                                               "EMAIL", "LOW", "FAILED", null, null));
     }
 
     private NotificationResponseDTO toResponseDto(Notification notification) {
@@ -129,6 +159,7 @@ public class NotificationController {
                 notification.getUpdatedTimestamp()
         );
     }
+    
 }
 
 
