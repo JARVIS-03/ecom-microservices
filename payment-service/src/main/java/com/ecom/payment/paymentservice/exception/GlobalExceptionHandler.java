@@ -1,46 +1,110 @@
 package com.ecom.payment.paymentservice.exception;
 
-import com.ecom.payment.paymentservice.dto.ErrorResponse;
+import com.ecom.payment.paymentservice.model.ErrorCode;
+import com.ecom.payment.paymentservice.model.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
+import javax.naming.ServiceUnavailableException;
+import java.util.Locale;
 
 
-@ControllerAdvice
+
+@RestControllerAdvice
 public class GlobalExceptionHandler {
+    @Autowired
+    private MessageSource messageSource;
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+
+    private ErrorResponse buildErrorResponse(ErrorCode errorCode, Locale locale) {
+        // Fetch localized error message from properties
+        String message = messageSource.getMessage(errorCode.getKey() + ".message", null, locale);
+
+        // Fetch custom error code as string and parse to int
+        String codeString = messageSource.getMessage(errorCode.getKey() + ".code", null, locale);
+        int customCode = Integer.parseInt(codeString);
+
+        // Get HTTP status code as int
+        int httpStatusCode = errorCode.getHttpStatus().value();
+
+        // Build and return ErrorResponse DTO
+        return new ErrorResponse(httpStatusCode, customCode, message);
+    }
+
+
+    @ExceptionHandler(PaymentException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentException(PaymentException ex, Locale locale) {
+        log.error(" PaymentException: {}", ex);
+        ErrorResponse errorResponse = buildErrorResponse(ex.getErrorCode(), locale);
+        return new ResponseEntity<>(errorResponse, HttpStatus.valueOf(errorResponse.getHttpStatus()));
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleServiceUnavailable(ServiceUnavailableException ex, Locale locale) {
+        
+        log.error(" ServiceUnavailableException: {}, URI: {}", ex.getMessage(), ex);
+
+        ErrorResponse response = buildErrorResponse(ErrorCode.PAYMENT_SERVICE_UNAVAILABLE, locale);
+        return new ResponseEntity<>(response, ErrorCode.PAYMENT_SERVICE_UNAVAILABLE.getHttpStatus());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolations(ConstraintViolationException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex, Locale locale) {
+        
+        log.error(" ConstraintViolationException: {}, URI: {}", ex.getMessage(),  ex);
+
+        ErrorResponse response = buildErrorResponse(ErrorCode.PAYMENT_VALIDATION_FAILED, locale);
+        return new ResponseEntity<>(response, ErrorCode.PAYMENT_VALIDATION_FAILED.getHttpStatus());
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
-        return buildErrorResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, Locale locale) {
+        
+        log.error(" MethodArgumentNotValidException: {}, URI: {}", ex.getMessage(),  ex);
+
+        ErrorResponse response = buildErrorResponse(ErrorCode.PAYMENT_VALIDATION_FAILED, locale);
+        return new ResponseEntity<>(response, ErrorCode.PAYMENT_VALIDATION_FAILED.getHttpStatus());
     }
 
-    @ExceptionHandler(InvalidOrderException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidOrder(InvalidOrderException ex) {
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingServletRequestParameter(MissingServletRequestParameterException ex, Locale locale) {
+        
+        log.error(" MissingServletRequestParameterException: {}, URI: {}", ex.getMessage(),  ex);
+
+        ErrorResponse response = buildErrorResponse(ErrorCode.PAYMENT_VALIDATION_FAILED, locale);
+        return new ResponseEntity<>(response, ErrorCode.PAYMENT_VALIDATION_FAILED.getHttpStatus());
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
-        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, Locale locale) {
+        
+        log.error(" HttpRequestMethodNotSupportedException: {}, URI: {}", ex.getMessage(),  ex);
+
+        ErrorResponse response = buildErrorResponse(ErrorCode.PAYMENT_METHOD_UNSUPPORTED, locale);
+        return new ResponseEntity<>(response, ErrorCode.PAYMENT_METHOD_UNSUPPORTED.getHttpStatus());
     }
 
-    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {
-        ErrorResponse error = new ErrorResponse(status, message, LocalDateTime.now());
-        return new ResponseEntity<>(error, status);
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllUncaughtException(Exception ex, Locale locale) {
+        
+        log.error(" Uncaught Exception: {}, URI: {}", ex.getMessage(),  ex);
+
+        ex.printStackTrace(); // To verify what is being thrown
+        ErrorResponse response = new ErrorResponse(500, 9999, "Unhandled exception: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
 }

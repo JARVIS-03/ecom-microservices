@@ -1,22 +1,18 @@
 package com.ecom.payment.paymentservice.service;
 
-import com.ecom.payment.paymentservice.dto.NotificationDTO;
 import com.ecom.payment.paymentservice.dto.PaymentRequestDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
 import com.ecom.payment.paymentservice.enums.PaymentStatus;
-import com.ecom.payment.paymentservice.exception.InvalidOrderException;
-import com.ecom.payment.paymentservice.exception.ResourceNotFoundException;
-import com.ecom.payment.paymentservice.mapper.PaymentRequestDTOtoPaymentMapper;
+import com.ecom.payment.paymentservice.exception.PaymentException;
 import com.ecom.payment.paymentservice.model.Payment;
+import com.ecom.payment.paymentservice.model.ErrorCode;
 import com.ecom.payment.paymentservice.repository.PaymentRepository;
-import com.ecom.payment.paymentservice.retry.RetryLogger;
 import com.ecom.payment.paymentservice.retry.RetryLogger;
 import com.ecom.payment.paymentservice.utillity.PaymentConverter;
 import com.ecom.payment.paymentservice.utillity.PaymentGatewaySimulator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,14 +23,14 @@ import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import lombok.extern.slf4j.Slf4j;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
+//@AllArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
     @Autowired
@@ -58,6 +54,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private final PaymentGatewaySimulator paymentGatewaySimulator;
 
+    public PaymentServiceImpl(RetryLogger retryLogger, PaymentGatewaySimulator paymentGatewaySimulator) {
+        this.retryLogger = retryLogger;
+        this.paymentGatewaySimulator = paymentGatewaySimulator;
+    }
+
     @Override
     @Transactional
     public PaymentResponseDTO initiatePayment(PaymentRequestDTO dto) {
@@ -73,7 +74,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (hasSuccessfulPayment) {
             log.warn("Payment already completed for orderId: {}", dto.getOrderId());
-            throw new IllegalStateException("Payment already completed for order ID: " + dto.getOrderId());
+//            throw new IllegalStateException("Payment already completed for order ID: " + dto.getOrderId());
+            throw new PaymentException(ErrorCode.PAYMENT_INTERNAL_ERROR);
         }
 
         Payment payment = buildPaymentEntity(dto);
@@ -105,7 +107,9 @@ public class PaymentServiceImpl implements PaymentService {
     @Recover
     public Payment recoverSavePayment(DataAccessException ex, Payment payment) {
         log.error("Failed to save payment after retries for orderID: {}", payment.getOrderId(), ex);
-        throw new IllegalStateException("Could not save payment after retries");
+//        throw new IllegalStateException("Could not save payment after retries");
+        throw new PaymentException(ErrorCode.PAYMENT_INTERNAL_ERROR);
+
     }
 
     private Payment buildPaymentEntity(PaymentRequestDTO dto) {
@@ -122,7 +126,7 @@ public class PaymentServiceImpl implements PaymentService {
             log.debug("Serialized method details: {}", methodDetails);
         } catch (JsonProcessingException e) {
             log.error("Error serializing method details", e);
-            throw new IllegalStateException("Failed to serialize payment method details");
+            throw new PaymentException(ErrorCode.PAYMENT_VALIDATION_FAILED);
         }
 
         return payment;
@@ -134,7 +138,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Updating payment status for ID: {} to {}", paymentId, status);
 
         Payment payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for ID: " + paymentId));
+                .orElseThrow(() -> new PaymentException(ErrorCode.PAYMENT_NOT_FOUND));
 
         PaymentStatus parsedStatus = parsedPaymentStatus(status);
         payment.setStatus(parsedStatus);
@@ -146,7 +150,9 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             return PaymentStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("Invalid Payment Status: " + status);
+//            throw new IllegalStateException("Invalid Payment Status: " + status);
+            throw new PaymentException(ErrorCode.PAYMENT_INTERNAL_ERROR);
+
         }
     }
 
@@ -156,7 +162,7 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Fetching payment by ID: {}", id);
 
         Payment payment = paymentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Payment not found for ID: " + id));
+                .orElseThrow(() -> new PaymentException(ErrorCode.PAYMENT_NOT_FOUND));
 
         return paymentConverter.toDTO(payment);
     }
@@ -180,13 +186,15 @@ public class PaymentServiceImpl implements PaymentService {
 
         List<Payment> payments = paymentRepository.findByOrderId(orderId);
         if (payments.isEmpty()) {
-            throw new ResourceNotFoundException("No payments found for Order ID: " + orderId);
+//            throw new ResourceNotFoundException("No payments found for Order ID: " + orderId);
+            throw new PaymentException(ErrorCode.PAYMENT_INTERNAL_ERROR);
+
         }
 
         Payment successfulPayment = payments.stream()
                 .filter(p -> PaymentStatus.SUCCESS.equals(p.getStatus()))
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("No successful payment found to refund for Order ID: " + orderId));
+                .orElseThrow(() -> new PaymentException(ErrorCode.PAYMENT_NOT_FOUND));
 
         successfulPayment.setStatus(PaymentStatus.REFUNDED);
         PaymentResponseDTO response = paymentConverter.toDTO(paymentRepository.save(successfulPayment));

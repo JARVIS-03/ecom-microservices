@@ -2,6 +2,8 @@ package com.ecom.payment.paymentservice.service;
 
 import com.ecom.payment.paymentservice.dto.NotificationDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
+import com.ecom.payment.paymentservice.exception.PaymentException;
+import com.ecom.payment.paymentservice.model.ErrorCode;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +33,6 @@ public class NotificationServiceClient {
 
     public void notificationFallback(PaymentResponseDTO response, String email, Throwable t) {
         log.error("Notification fallback triggered for email: {}", email, t);
-        throw new RuntimeException("NotificationService is down. Unable to notify " + email);
+        throw new PaymentException(ErrorCode.PAYMENT_INTERNAL_ERROR);
     }
 }

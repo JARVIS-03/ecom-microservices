@@ -1,7 +1,8 @@
 package com.ecom.payment.paymentservice.validator;
 
 import com.ecom.payment.paymentservice.dto.*;
-import com.ecom.payment.paymentservice.exception.PaymentProcessingException;
+import com.ecom.payment.paymentservice.exception.PaymentException;
+import com.ecom.payment.paymentservice.model.ErrorCode;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,14 +13,14 @@ public class RequestValidator {
 
          if(StringUtils.isBlank(value)){
              log.error("Invalid Request Param : {}",value);
-             throw new PaymentProcessingException("Invalid Request");
+             throw new PaymentException(ErrorCode.PAYMENT_VALIDATION_FAILED);
          }
      }
     public static void validateRequestParam(String value, int maxAllowedLimit) {
          validateRequestParam(value);
         if(value.length() > maxAllowedLimit){
             log.error("Invalid Request Param : {}",value);
-            throw new PaymentProcessingException("Invalid Request");
+            throw new PaymentException(ErrorCode.PAYMENT_VALIDATION_FAILED);
         }
     }
 
@@ -27,11 +28,11 @@ public class RequestValidator {
     public static void validatePaymentDetails(PaymentRequestDTO request){
          if(request == null){
              log.error("Invalid Request - request is empty");
-             throw new PaymentProcessingException("Request is empty");
+             throw new PaymentException(ErrorCode.PAYMENT_VALIDATION_FAILED);
          }
         if (!PaymentValidator.validate(request.getPaymentMethod(), request.getMethodDetails())) {
             log.error("Invalid Request - Invalid payment method details provided");
-            throw new PaymentProcessingException("Invalid payment method details provided");
+            throw new PaymentException(ErrorCode.PAYMENT_VALIDATION_FAILED);
         }
 
     }

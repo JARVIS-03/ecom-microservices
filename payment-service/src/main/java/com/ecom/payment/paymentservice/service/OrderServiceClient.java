@@ -1,6 +1,8 @@
 package com.ecom.payment.paymentservice.service;
 
-import com.ecom.payment.paymentservice.exception.InvalidOrderException;
+
+import com.ecom.payment.paymentservice.exception.PaymentException;
+import com.ecom.payment.paymentservice.model.ErrorCode;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +27,16 @@ public class OrderServiceClient {
     public void validateOrder(Long orderId) {
         Object response = restTemplate.getForObject(ORDER_SERVICE_BASE_URL + orderId, Object.class);
         if (response == null) {
-            throw new InvalidOrderException("Invalid order ID: " + orderId);
+            throw new PaymentException(ErrorCode.PAYMENT_VALIDATION_FAILED);
+
         }
         log.info("Order ID {} is valid", orderId);
     }
 
     public void validateOrderFallback(Long orderId, Throwable t) {
         log.error("Order service fallback triggered for orderId: {}", orderId, t);
-        throw new InvalidOrderException("Order service unavailable for order ID: " + orderId);
+        throw new PaymentException(ErrorCode.PAYMENT_VALIDATION_FAILED);
+
     }
 
     @CircuitBreaker(name = "orderService", fallbackMethod = "updateOrderStatusFallback")
@@ -44,6 +48,6 @@ public class OrderServiceClient {
 
     public void updateOrderStatusFallback(Long orderId, String status, Throwable t) {
         log.error("Fallback triggered while updating order status for orderId: {}, status: {}", orderId, status, t);
-        throw new RuntimeException("Unable to update order status for orderId: " + orderId);
+        throw new PaymentException(ErrorCode.PAYMENT_INTERNAL_ERROR);
     }
 }

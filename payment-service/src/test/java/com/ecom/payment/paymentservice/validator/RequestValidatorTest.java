@@ -1,72 +1,89 @@
-//package com.ecom.payment.paymentservice.validator;
-//
-//import com.ecom.payment.paymentservice.dto.*;
-//import com.ecom.payment.paymentservice.exception.PaymentProcessingException;
-//import org.junit.jupiter.api.Test;
-//import static org.junit.jupiter.api.Assertions.*;
-//
-//class RequestValidatorTest {
-//
-//    @Test
-//    void testValidRequestParam() {
-//        assertDoesNotThrow(() -> RequestValidator.validateRequestParam("ValidParam"));
-//    }
-//
-//    @Test
-//    void testInvalidRequestParam_BlankValue() {
-//        Exception exception = assertThrows(PaymentProcessingException.class, () -> RequestValidator.validateRequestParam(""));
-//        assertEquals("Invalid Request", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testInvalidRequestParam_NullValue() {
-//        Exception exception = assertThrows(PaymentProcessingException.class, () -> RequestValidator.validateRequestParam(null));
-//        assertEquals("Invalid Request", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testValidRequestParam_WithMaxLimit() {
-//        assertDoesNotThrow(() -> RequestValidator.validateRequestParam("ValidLength", 20));
-//    }
-//
-//    @Test
-//    void testInvalidRequestParam_ExceedsMaxLimit() {
-//        Exception exception = assertThrows(PaymentProcessingException.class, () -> RequestValidator.validateRequestParam("ExceedingMaxLength", 10));
-//        assertEquals("Invalid Request", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testValidPaymentDetails() {
-//        PaymentRequestDTO request = new PaymentRequestDTO();
-//        request.setOrderId("123");
-//        request.setAmount(100.0);
-//        request.setPaymentMethod("CREDIT_CARD");
-//
-//        CreditCardDTO cc = new CreditCardDTO();
-//        cc.setType("CREDIT_CARD");
-//        cc.setCardNumber("1234567812345678");
-//        cc.setExpiry("12/25");
-//        cc.setCvv("123");
-//
-//        request.setMethodDetails(cc);
-//
-//        assertDoesNotThrow(() -> RequestValidator.validatePaymentDetails(request));
-//    }
-//
-//    @Test
-//    void testInvalidPaymentDetails_NullRequest() {
-//        Exception exception = assertThrows(PaymentProcessingException.class, () -> RequestValidator.validatePaymentDetails(null));
-//        assertEquals("Invalid Request", exception.getMessage());
-//    }
-//
-//    @Test
-//    void testInvalidPaymentDetails_BadPaymentMethod() {
-//        PaymentRequestDTO request = new PaymentRequestDTO();
-//        request.setOrderId("123");
-//        request.setAmount(100.0);
-//        request.setPaymentMethod("INVALID_METHOD"); // Unsupported Payment Method
-//
-//        Exception exception = assertThrows(PaymentProcessingException.class, () -> RequestValidator.validatePaymentDetails(request));
-//        assertEquals("Unsupported payment method: INVALID_METHOD", exception.getMessage());
-//    }
-//}
+package com.ecom.payment.paymentservice.validator;
+
+import com.ecom.payment.paymentservice.dto.*;
+import com.ecom.payment.paymentservice.exception.PaymentException;
+import com.ecom.payment.paymentservice.model.ErrorCode;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class RequestValidatorTest {
+
+    @Test
+    void testValidateRequestParam_NullOrBlank_Throws() {
+        PaymentException ex = assertThrows(PaymentException.class, () -> {
+            RequestValidator.validateRequestParam(null);
+        });
+        assertEquals(ErrorCode.PAYMENT_VALIDATION_FAILED, ex.getErrorCode());
+
+        ex = assertThrows(PaymentException.class, () -> {
+            RequestValidator.validateRequestParam("");
+        });
+        assertEquals(ErrorCode.PAYMENT_VALIDATION_FAILED, ex.getErrorCode());
+
+        ex = assertThrows(PaymentException.class, () -> {
+            RequestValidator.validateRequestParam("   ");
+        });
+        assertEquals(ErrorCode.PAYMENT_VALIDATION_FAILED, ex.getErrorCode());
+    }
+
+    @Test
+    void testValidateRequestParam_ExceedsMaxLength_Throws() {
+        String value = "12345";
+        // Should pass because length = 5, maxAllowedLimit = 5
+        assertDoesNotThrow(() -> RequestValidator.validateRequestParam(value, 5));
+
+        // Should throw because length > 5
+        PaymentException ex = assertThrows(PaymentException.class, () -> {
+            RequestValidator.validateRequestParam(value, 4);
+        });
+        assertEquals(ErrorCode.PAYMENT_VALIDATION_FAILED, ex.getErrorCode());
+    }
+
+    @Test
+    void testValidatePaymentDetails_NullRequest_Throws() {
+        PaymentException ex = assertThrows(PaymentException.class, () -> {
+            RequestValidator.validatePaymentDetails(null);
+        });
+        assertEquals(ErrorCode.PAYMENT_VALIDATION_FAILED, ex.getErrorCode());
+    }
+
+    @Test
+    void testValidatePaymentDetails_InvalidPaymentMethodDetails_Throws() {
+        // Use a dummy PaymentRequestDTO with invalid payment method to trigger failure
+        PaymentRequestDTO request = new PaymentRequestDTO();
+        request.setPaymentMethod("INVALID_METHOD");
+        // create dummy PaymentMethodDetails to satisfy signature
+        request.setMethodDetails(new PaymentMethodDetails() {
+            @Override
+            public String getType() {
+                return null;
+            }
+
+            @Override
+            public void setType(String type) {
+
+            }
+        });
+
+        PaymentException ex = assertThrows(PaymentException.class, () -> {
+            RequestValidator.validatePaymentDetails(request);
+        });
+        assertEquals(ErrorCode.PAYMENT_UNSUPPORTED_METHOD, ex.getErrorCode());
+    }
+
+    @Test
+    void testValidatePaymentDetails_ValidPaymentMethodDetails_ReturnsTrue() {
+        // Setup a valid CreditCardDTO for testing
+        CreditCardDTO cc = new CreditCardDTO();
+        cc.setCardNumber("1234567812345678");
+        cc.setExpiry("12/25");
+        cc.setCvv("123");
+
+        PaymentRequestDTO request = new PaymentRequestDTO();
+        request.setPaymentMethod("CREDIT_CARD");
+        request.setMethodDetails(cc);
+
+        assertDoesNotThrow(() -> RequestValidator.validatePaymentDetails(request));
+    }
+}

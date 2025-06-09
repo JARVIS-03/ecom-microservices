@@ -2,6 +2,8 @@ package com.ecom.payment.paymentservice.utillity;
 
 
 import com.ecom.payment.paymentservice.dto.*;
+import com.ecom.payment.paymentservice.exception.PaymentException;
+import com.ecom.payment.paymentservice.model.ErrorCode;
 import com.ecom.payment.paymentservice.model.Payment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -33,6 +35,7 @@ public class PaymentConverter {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            throw new PaymentException(ErrorCode.PAYMENT_INTERNAL_ERROR);
         }
 
         return dto;

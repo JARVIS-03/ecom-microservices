@@ -1,5 +1,7 @@
 package com.ecom.payment.paymentservice.utillity;
 
+import com.ecom.payment.paymentservice.exception.PaymentException;
+import com.ecom.payment.paymentservice.model.ErrorCode;
 import com.ecom.payment.paymentservice.model.Payment;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -23,7 +25,7 @@ public class PaymentGatewaySimulator {
         String status = Math.random() > 0.2 ? "SUCCESS" : "FAILED";
         if("FAILED".equals(status)) {
             log.warn("Simulating payment failed for method: {}", method);
-            throw new RuntimeException("Simulating payment failed");
+            throw new PaymentException(ErrorCode.PAYMENT_GATEWAY_ERROR);
         }
         log.debug("Mock gateway response for {}: {}", method, status);
         return status;
@@ -32,6 +34,6 @@ public class PaymentGatewaySimulator {
     @Recover
     public String recoverSimulation(RuntimeException ex, String method) {
         log.error("Payment gateway failed after retries for method: {}", method, ex);
-        throw new IllegalStateException("Payment gateway unavailable. Please try again later.");
+        throw new PaymentException(ErrorCode.PAYMENT_GATEWAY_ERROR);
     }
 }
