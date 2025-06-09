@@ -1,5 +1,6 @@
 package com.ecom_microservices.order_service.service.impl;
 
+import com.ecom_microservices.order_service.dto.request.NotificationRequest;
 import com.ecom_microservices.order_service.dto.request.OrderRequest;
 import com.ecom_microservices.order_service.dto.response.OrderResponse;
 import com.ecom_microservices.order_service.entity.Order;
@@ -12,6 +13,9 @@ import com.ecom_microservices.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -43,17 +47,16 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse createOrder(OrderRequest orderRequest) {
         log.info("Creating a new order for customer: {}", orderRequest.getCustomerIdentifier());
 
-        for(OrderItem orderItems:orderRequest.getOrderItems())
-            validateProduct(orderItems.getProductId());
+//        for(OrderItem orderItems:orderRequest.getOrderItems())
+//            validateProduct(orderItems.getProductId());
 
         Order order = modelMapper.map(orderRequest, Order.class);
         order.setTotalQuantity(calculateTotalQuantity(orderRequest.getOrderItems()));
         order.setTotalAmount(calculateTotalAmount(orderRequest.getOrderItems()));
         order.setOrderStatus(OrderStatus.PROCESSING);
-        order.setCreatedAt(LocalDateTime.now());
-        order.setUpdatedAt(LocalDateTime.now());
 
         Order savedOrder=orderRepository.save(order);
+//        sendNotification(savedOrder);
         log.debug("Order saved: {}", savedOrder.getId());
         return modelMapper.map(savedOrder,OrderResponse.class);
     }
@@ -148,6 +151,25 @@ public class OrderServiceImpl implements OrderService {
         }
         catch (Exception e) {
             throw new RuntimeException("Error contacting Product Service for product ID " + productId + ": " + e.getMessage());
+        }
+    }
+
+    private void sendNotification(Order savedOrder) {
+        NotificationRequest notificationRequest=NotificationRequest.builder()
+                .orderId(savedOrder.getId())
+                .customerId(savedOrder.getCustomerIdentifier())
+                .orderStatus(savedOrder.getOrderStatus())
+                .build();
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<NotificationRequest> request = new HttpEntity<>(notificationRequest, headers);
+
+            restTemplate.postForLocation("http://NOTIFY-SERVICE/api/notifications/order/send", request);
+            log.info("Notification sent successfully.");
+        } catch (Exception e) {
+            log.error("Failed to send notification: {}", e.getMessage());
         }
     }
 
