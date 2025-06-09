@@ -178,14 +178,11 @@ import com.ecom_microservices.notify_service.enums.NotificationType;
 import com.ecom_microservices.notify_service.enums.OrderStatus;
 import com.ecom_microservices.notify_service.enums.PaymentStatus;
 import com.ecom_microservices.notify_service.enums.PriorityLevel;
-import com.ecom_microservices.notify_service.exception.InvalidNotificationRequestException;
 import com.ecom_microservices.notify_service.exception.InvalidOrderStatusRequestException;
 import com.ecom_microservices.notify_service.exception.NotificationNotFoundException;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.repository.NotificationRepository;
 import com.ecom_microservices.notify_service.util.EmailSender;
-
-import jakarta.validation.Valid;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -194,7 +191,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
