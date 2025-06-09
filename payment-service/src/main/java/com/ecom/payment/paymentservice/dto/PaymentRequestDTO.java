@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Positive;
 
 
 public class PaymentRequestDTO {
-    @NotBlank(message = "Order ID must not be blank")
+    @NotNull(message = "Order ID must not be blank")
     private Long orderId;
 
     @NotNull(message = "Amount must not be null")
