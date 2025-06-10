@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.class);
     @Autowired
@@ -53,10 +53,10 @@ public class PaymentServiceImpl implements PaymentService {
     private NotificationServiceClient notificationServiceClient;
 
     @Autowired
-    private final RetryLogger retryLogger;
+    private RetryLogger retryLogger;
 
     @Autowired
-    private final PaymentGatewaySimulator paymentGatewaySimulator;
+    private PaymentGatewaySimulator paymentGatewaySimulator;
 
     @Override
     @Transactional
