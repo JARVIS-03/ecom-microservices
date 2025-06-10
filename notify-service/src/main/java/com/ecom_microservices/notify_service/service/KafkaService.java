@@ -9,10 +9,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import com.ecom_microservices.notify_service.dto.KafkaRequest;
+import com.ecom_microservices.notify_service.dto.KafkaResponse;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
 import com.ecom_microservices.notify_service.dto.OrderDTO;
 import com.ecom_microservices.notify_service.dto.PaymentDTO;
-import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.enums.OrderStatus;
 import com.ecom_microservices.notify_service.enums.PaymentStatus;
 
@@ -25,7 +25,7 @@ public class KafkaService {
 	private NotificationService notificationService;
 	
 	@Autowired
-	private KafkaTemplate<String, NotificationResponseDTO> kafkaTemplate;
+	private KafkaTemplate<String, KafkaResponse> kafkaTemplate;
 	
 	@Value("${kafka.response.topic}")
 	private String RESPONSE_TOPIC;
@@ -33,30 +33,27 @@ public class KafkaService {
 	@KafkaListener(topics = "${kafka.request.topic}" , groupId = "${spring.kafka.consumer.group-id}")
     public void consume(KafkaRequest request) {
 		logger.info("Message Received from Kafka: "+ request);
-		NotificationResponseDTO response = null;
-		if(request.getServiceName().contentEquals("payment")) {
+		NotificationResponseDTO notificationResponse = null;
+		if(request.getServiceName().contains("payment")) {
 			try {
-				response = validatePaymentRequest(request);
+				notificationResponse = validatePaymentRequest(request);
 			} catch (Exception e) {
 				logger.error("Error occurred while processing the request");
 			}
-        } else if(request.getServiceName().contentEquals("order")) {
+        } else if(request.getServiceName().contains("order")) {
         	try {
-        		response = validateOrderRequest(request);
+        		notificationResponse = validateOrderRequest(request);
         
         	} catch (Exception e) {
         		logger.error("Error occurred while processing the request");
 			}
+        } else if(notificationResponse == null || notificationResponse.getId() == null){
+        	notificationResponse = new NotificationResponseDTO();
+			notificationResponse.setId(0l);
+        	logger.error("Invalid request caught in Kafka : "+ request);
         }
-		if(response == null){
-        	response = new NotificationResponseDTO();
-        	response.setId(request.getId());
-        	response.setMessageContent("Bad Request.");
-        	response.setStatus(NotificationStatus.FAILED.toString());
-        	logger.error("Invalid request caught in Kafka : "+ response);
-        }
-        kafkaTemplate.send(RESPONSE_TOPIC, request.getServiceName(), response);
-        logger.debug("Mesage sent to kafka : "+response);
+        kafkaTemplate.send(RESPONSE_TOPIC, request.getServiceName(), new KafkaResponse(notificationResponse.getId(), request));
+        logger.debug("Mesage sent to kafka with id " + notificationResponse.getId());
     }
 	
 	private NotificationResponseDTO validatePaymentRequest(KafkaRequest request) {
