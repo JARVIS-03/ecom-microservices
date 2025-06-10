@@ -33,6 +33,7 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         log.info("Returning {} products", products.size());
         return ResponseEntity.ok(products);
+//        hhs
     }
 
     @GetMapping("/{productId}")
