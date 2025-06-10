@@ -19,6 +19,6 @@ public class OrderRequest {
     private List<OrderItem> orderItems;
 
     @NotNull(message = "Customer identifier is required")
-    private UUID customerIdentifier;
+    private long customerIdentifier;
 
 }
