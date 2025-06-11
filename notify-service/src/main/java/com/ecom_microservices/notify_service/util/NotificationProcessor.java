@@ -46,6 +46,7 @@ public class NotificationProcessor {
                 }
             } catch (Exception e) {
                 logger.error("Error Occured while processing the notification with id: "+notification.getId());
+                throw e;
             }
         }
     }

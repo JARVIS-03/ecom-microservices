@@ -15,6 +15,8 @@ import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.repository.NotificationRepository;
 import com.ecom_microservices.notify_service.service.NotificationService;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+
 @Component
 public class EmailSender {
 	
@@ -29,6 +31,7 @@ public class EmailSender {
 	@Retryable(
 			maxAttempts = 3,
 			backoff = @Backoff(delay = 2000))
+	@CircuitBreaker(name = "serviceFallback" , fallbackMethod = "notificationFallback")
 	public void send(Notification notification) {
 		logger.info("Trying to send notification with id: "+notification.getId());
 		try {
@@ -55,5 +58,9 @@ public class EmailSender {
 	        logger.warn("Failed to send after retries. Marking as FAILED for id: " + notification.getId());
 	        notification.setStatus(NotificationStatus.FAILED);
 	        notificationRepository.save(notification);
+	 }
+	 
+	 public void notificationFallback(Notification notification, Throwable t) {
+		 logger.error("Notification Fallback Method called. Circuit moved to Half_Open.");
 	 }
 }
