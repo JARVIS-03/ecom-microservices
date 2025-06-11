@@ -19,6 +19,7 @@ public class PaymentConverter {
         dto.setStatus(payment.getStatus().name());
         dto.setPaymentMethod(payment.getPaymentMethod());
         dto.setDate(payment.getDate());
+        dto.setEmail(payment.getEmail());
 
         try {
             Class<?> clazz = switch (payment.getPaymentMethod()) {

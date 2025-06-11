@@ -2,6 +2,7 @@ package com.ecom.payment.paymentservice.model;
 
 import com.ecom.payment.paymentservice.enums.PaymentStatus;
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,13 +13,17 @@ public class Payment {
 
     private Long orderId;
     private Double amount;
+
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
+
     private String paymentMethod;
     private LocalDateTime date;
 
     @Lob
     private String paymentDetails;
+
+    private String email;
 
     public Long getPaymentId() {
         return paymentId;
@@ -67,5 +72,12 @@ public class Payment {
     }
     public void setPaymentDetails(String paymentDetails) {
         this.paymentDetails = paymentDetails;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

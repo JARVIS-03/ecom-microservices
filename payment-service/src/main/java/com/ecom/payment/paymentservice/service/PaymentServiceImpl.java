@@ -301,7 +301,7 @@ private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.cla
         PaymentResponseDTO response = updatePaymentStatus(payment.getPaymentId(), result);
         log.info("Final payment response after status update: {}", response);
 
-        notificationServiceClient.sendNotification(response, ""); // Provide email as needed
+        notificationServiceClient.sendNotification(response); // Provide email as needed
 
         return response;
     }
@@ -313,6 +313,7 @@ private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.cla
         payment.setPaymentMethod(dto.getPaymentMethod());
         payment.setStatus(PaymentStatus.INITIATED);
         payment.setDate(LocalDateTime.now());
+        payment.setEmail(dto.getEmail());
 
         try {
             String methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
@@ -392,7 +393,7 @@ private static final Logger log = LoggerFactory.getLogger(PaymentServiceImpl.cla
 
         orderServiceClient.updateOrderStatus(orderId, "REFUNDED");
 
-        notificationServiceClient.sendNotification(response, "vamsikrishnamavilla@gmail.com");
+        notificationServiceClient.sendNotification(response);
 
         return response;
     }
