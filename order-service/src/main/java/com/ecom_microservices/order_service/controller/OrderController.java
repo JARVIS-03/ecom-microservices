@@ -3,6 +3,7 @@ package com.ecom_microservices.order_service.controller;
 import com.ecom_microservices.order_service.dto.request.OrderRequest;
 import com.ecom_microservices.order_service.dto.response.OrderResponse;
 import com.ecom_microservices.order_service.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,7 +21,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest)
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest orderRequest)
     {
         log.info("Received request to create order for customer: {}", orderRequest.getCustomerIdentifier());
         OrderResponse orderResponse=orderService.createOrder(orderRequest);
@@ -37,7 +37,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> getOrder(@PathVariable UUID orderId)
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable long orderId)
     {
         log.info("Received request to get order with ID: {}", orderId);
         OrderResponse orderResponse=orderService.getOrder(orderId);
@@ -45,7 +45,7 @@ public class OrderController {
     }
 
     @GetMapping("/customer")
-    public ResponseEntity<List<OrderResponse>> getOrderByCustomerId(@RequestParam UUID customerId)
+    public ResponseEntity<List<OrderResponse>> getOrderByCustomerId(@RequestParam long customerId)
     {
         log.info("Received request to get orders for customer ID: {}", customerId);
         List<OrderResponse> orderResponses=orderService.getOrderByCustomerId(customerId);
@@ -53,7 +53,7 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> updateOrder(@PathVariable UUID orderId, @RequestBody OrderRequest orderRequest)
+    public ResponseEntity<OrderResponse> updateOrder(@PathVariable long orderId,@Valid @RequestBody OrderRequest orderRequest)
     {
         log.info("Received request to update order with ID: {}", orderId);
         OrderResponse orderResponse=orderService.updateOrder(orderId,orderRequest);
@@ -61,7 +61,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> deleteByOrder(@PathVariable UUID orderId)
+    public ResponseEntity<Void> deleteByOrder(@PathVariable long orderId)
     {
         log.info("Received request to delete order with ID: {}", orderId);
         orderService.deleteOrder(orderId);
@@ -69,7 +69,7 @@ public class OrderController {
     }
 
     @PatchMapping("/cancel/{orderId}")
-    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable UUID orderId) {
+    public ResponseEntity<OrderResponse> cancelOrder(@PathVariable long orderId) {
         log.info("Received request to cancel order with ID: {}", orderId);
         OrderResponse orderResponse = orderService.cancelOrder(orderId);
         return new ResponseEntity<>(orderResponse, HttpStatus.OK);

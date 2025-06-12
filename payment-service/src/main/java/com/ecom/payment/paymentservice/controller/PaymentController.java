@@ -25,9 +25,9 @@ public class PaymentController {
 
 
     @PostMapping("/initiate")
-    public ResponseEntity<PaymentResponseDTO> initiatePayment(@RequestBody PaymentRequestDTO request) {
+    public ResponseEntity<PaymentResponseDTO> initiatePayment(@Valid @RequestBody PaymentRequestDTO request) {
         log.info("Received payment initiation request: orderId = {}, method = {}", request.getOrderId(), request.getPaymentMethod());
-//        RequestValidator.validatePaymentDetails(request);
+        RequestValidator.validatePaymentDetails(request);
 
         PaymentResponseDTO response = paymentService.initiatePayment(request);
         log.info("Payment initiated successfully: paymentId = {}, status = {}", response.getPaymentId(), response.getStatus());

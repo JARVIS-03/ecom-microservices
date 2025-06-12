@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -19,14 +18,14 @@ import java.util.UUID;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
     @OneToMany(cascade = CascadeType.ALL)
     private List<OrderItem> orderItems;
 
     @Column(nullable = false,updatable = false)
-    private UUID customerIdentifier;
+    private long customerIdentifier;
 
     @Column(nullable = false)
     @Positive(message = "Must be greater than zero")

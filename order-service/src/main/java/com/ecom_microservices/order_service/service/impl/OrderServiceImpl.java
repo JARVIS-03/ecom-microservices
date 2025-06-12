@@ -3,6 +3,7 @@ package com.ecom_microservices.order_service.service.impl;
 import com.ecom_microservices.order_service.dto.request.NotificationRequest;
 import com.ecom_microservices.order_service.dto.request.OrderRequest;
 import com.ecom_microservices.order_service.dto.response.OrderResponse;
+import com.ecom_microservices.order_service.dto.response.ProductResponse;
 import com.ecom_microservices.order_service.entity.Order;
 import com.ecom_microservices.order_service.entity.OrderItem;
 import com.ecom_microservices.order_service.enums.OrderStatus;
@@ -25,7 +26,6 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +47,8 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse createOrder(OrderRequest orderRequest) {
         log.info("Creating a new order for customer: {}", orderRequest.getCustomerIdentifier());
 
-//        for(OrderItem orderItems:orderRequest.getOrderItems())
-//            validateProduct(orderItems.getProductId());
+        for(OrderItem orderItems:orderRequest.getOrderItems())
+            validateProduct(orderItems.getProductId());
 
         Order order = modelMapper.map(orderRequest, Order.class);
         order.setTotalQuantity(calculateTotalQuantity(orderRequest.getOrderItems()));
@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(OrderStatus.PROCESSING);
 
         Order savedOrder=orderRepository.save(order);
-//        sendNotification(savedOrder);
+        sendNotification(savedOrder);
         log.debug("Order saved: {}", savedOrder.getId());
         return modelMapper.map(savedOrder,OrderResponse.class);
     }
@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public OrderResponse getOrder(UUID orderId) {
+    public OrderResponse getOrder(long orderId) {
         log.info("Fetching order with ID: {}", orderId);
         Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Resource not found"));
         return modelMapper.map(order,OrderResponse.class);
@@ -81,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getOrderByCustomerId(UUID customerId) {
+    public List<OrderResponse> getOrderByCustomerId(long customerId) {
         log.info("Fetching orders for customer ID: {}", customerId);
         List<OrderResponse> orderResponses=new ArrayList<>();
         for(Order order:orderRepository.findByCustomerIdentifier(customerId))
@@ -95,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
             value = { RuntimeException.class },
             maxAttempts = 3,
             backoff = @Backoff(delay = 2000))
-    public OrderResponse updateOrder(UUID orderId, OrderRequest orderRequest) {
+    public OrderResponse updateOrder(long orderId, OrderRequest orderRequest) {
         log.info("Updating order with ID: {}", orderId);
         Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Resource not found"));
 
@@ -115,7 +115,7 @@ public class OrderServiceImpl implements OrderService {
             value = { RuntimeException.class },
             maxAttempts = 3,
             backoff = @Backoff(delay = 2000))
-    public void deleteOrder(UUID orderId) {
+    public void deleteOrder(long orderId) {
         log.info("Deleting order with ID: {}", orderId);
         if (!orderRepository.existsById(orderId)) {
             log.error("Order not found with ID: {}", orderId);
@@ -126,7 +126,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResponse cancelOrder(UUID orderId) {
+    @Transactional
+    @Retryable(
+            value = { RuntimeException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000))
+    public OrderResponse cancelOrder(long orderId) {
         log.info("Cancelling order with ID: {}", orderId);
         Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Resource not found"));
         if(order.getOrderStatus().equals(OrderStatus.PROCESSING))
@@ -145,20 +150,18 @@ public class OrderServiceImpl implements OrderService {
     {
         String productServiceUrl = "http://PRODUCT-SERVICE/api/products/" + productId;
 
-        try {
-            restTemplate.getForEntity(productServiceUrl, Void.class);
-            log.debug("Product ID {} is valid", productId);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("Error contacting Product Service for product ID " + productId + ": " + e.getMessage());
-        }
+            ProductResponse productResponse=restTemplate.getForObject(productServiceUrl, ProductResponse.class);
+            if (productResponse.getName().equals("Unavailable"))
+                throw new ResourceNotFoundException("Product not found");
+            else
+                log.debug("Product ID {} is valid", productId);
     }
 
     private void sendNotification(Order savedOrder) {
         NotificationRequest notificationRequest=NotificationRequest.builder()
                 .orderId(savedOrder.getId())
-                .customerId(savedOrder.getCustomerIdentifier())
-                .orderStatus(savedOrder.getOrderStatus())
+                .userEmail("abc@gmail.com")
+                .status(savedOrder.getOrderStatus())
                 .build();
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -166,7 +169,7 @@ public class OrderServiceImpl implements OrderService {
 
             HttpEntity<NotificationRequest> request = new HttpEntity<>(notificationRequest, headers);
 
-            restTemplate.postForLocation("http://NOTIFY-SERVICE/api/notifications/order/send", request);
+            restTemplate.postForLocation("http://NOTIFICATION-SERVICE/api/notifications/order/send", request);
             log.info("Notification sent successfully.");
         } catch (Exception e) {
             log.error("Failed to send notification: {}", e.getMessage());

@@ -8,15 +8,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderResponse {
-    private UUID id;
+    private long id;
     private List<OrderItem> orderItems;
-    private UUID customerIdentifier;
+    private long customerIdentifier;
     private int totalQuantity;
     private long totalAmount;
     private OrderStatus orderStatus;
