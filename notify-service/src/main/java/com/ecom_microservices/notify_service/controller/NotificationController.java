@@ -7,6 +7,7 @@ import com.ecom_microservices.notify_service.dto.PaymentDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.service.NotificationService;
+
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ public class NotificationController {
     	NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
+    
     @PostMapping("/payment/send")
     public ResponseEntity<NotificationResponseDTO> sendPaymentStatusNotification(@Valid @RequestBody PaymentDTO paymentDTO) {
         logger.info("POST /api/notifications/payment/send - Sending notification to '{}'", paymentDTO.getUserEmail());
@@ -129,6 +131,7 @@ public class NotificationController {
                 notification.getUpdatedTimestamp()
         );
     }
+    
 }
 
 
