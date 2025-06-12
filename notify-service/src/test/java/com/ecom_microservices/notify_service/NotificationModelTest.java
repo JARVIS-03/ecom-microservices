@@ -1,3 +1,4 @@
+
 package com.ecom_microservices.notify_service;
 
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
@@ -208,13 +209,22 @@ public class NotificationModelTest {
                 .type(NotificationType.EMAIL)
                 .build();
 
-        //notification.onCreate();
+        notification.onCreate(); // Manually trigger @PrePersist
         assertNotNull(notification.getCreatedTimestamp());
         assertNotNull(notification.getUpdatedTimestamp());
         assertEquals(notification.getCreatedTimestamp(), notification.getUpdatedTimestamp());
 
         LocalDateTime previousUpdate = notification.getUpdatedTimestamp();
-        //notification.onUpdate();
+
+        // Simulate update delay
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        notification.onUpdate(); // Manually trigger @PreUpdate
         assertTrue(notification.getUpdatedTimestamp().isAfter(previousUpdate));
     }
 }
+
