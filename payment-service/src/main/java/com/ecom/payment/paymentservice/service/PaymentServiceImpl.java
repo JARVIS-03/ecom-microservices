@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import lombok.extern.slf4j.Slf4j;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,13 +43,11 @@ public class PaymentServiceImpl implements PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Autowired
     private PaymentMapper paymentMapper;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Autowired
     private NotificationServiceClient notificationServiceClient;
 
@@ -68,17 +65,16 @@ public class PaymentServiceImpl implements PaymentService {
         // Validate order via separate OrderServiceClient
 //        orderServiceClient.validateOrder(dto.getOrderId());
 //
-//        // Check if payment already successful
-//        boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
-//                .anyMatch(payment -> PaymentStatus.SUCCESS.equals(payment.getStatus()));
-        boolean hasSuccessfulPayment=false;
+        // Check if payment already successful
+        boolean hasSuccessfulPayment = paymentRepository.findByOrderId(dto.getOrderId()).stream()
+                .anyMatch(payment -> PaymentStatus.SUCCESS.equals(payment.getStatus()));
+
 
         if (hasSuccessfulPayment) {
             log.warn("Payment already completed for orderId: {}", dto.getOrderId());
             throw new IllegalStateException("Payment already completed for order ID: " + dto.getOrderId());
         }
 
-//        Payment payment = buildPaymentEntity(dto);
         Payment payment = paymentMapper.toEntity(dto);
         payment = savePaymentWithRetry(payment);
         log.info("Payment saved with ID: {}", payment.getPaymentId());
@@ -90,7 +86,7 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentResponseDTO response = updatePaymentStatus(payment.getPaymentId(), result);
         log.info("Final payment response after status update: {}", response);
 
-        notificationServiceClient.sendNotification(response, ""); // Provide email as needed
+        notificationServiceClient.sendNotification(response); // Provide email as needed
 
         return response;
     }
@@ -111,27 +107,6 @@ public class PaymentServiceImpl implements PaymentService {
         log.error("Failed to save payment after retries for orderID: {}", payment.getOrderId(), ex);
         throw new IllegalStateException("Could not save payment after retries");
     }
-
-//    private Payment buildPaymentEntity(PaymentRequestDTO dto) {
-//        Payment payment = new Payment();
-//        payment.setOrderId(dto.getOrderId());
-//        payment.setAmount(dto.getAmount());
-//        payment.setPaymentMethod(dto.getPaymentMethod());
-//        payment.setStatus(PaymentStatus.INITIATED);
-//        payment.setDate(LocalDateTime.now());
-//
-//        try {
-//            String methodDetails = objectMapper.writeValueAsString(dto.getMethodDetails());
-//            payment.setPaymentDetails(methodDetails);
-//            log.debug("Serialized method details: {}", methodDetails);
-//        } catch (JsonProcessingException e) {
-//            log.error("Error serializing method details", e);
-//            throw new IllegalStateException("Failed to serialize payment method details");
-//        }
-//
-//        return payment;
-//        return paymentMapper.toDto(payment);
-//    }
 
     @Override
     @Transactional
@@ -199,8 +174,10 @@ public class PaymentServiceImpl implements PaymentService {
 
         orderServiceClient.updateOrderStatus(orderId, "REFUNDED");
 
-        notificationServiceClient.sendNotification(response, "vamsikrishnamavilla@gmail.com");
-        return paymentMapper.toDto(successfulPayment);
+
+        notificationServiceClient.sendNotification(response);
+
+        return response;
     }
 
 
