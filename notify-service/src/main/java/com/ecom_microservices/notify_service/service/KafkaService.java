@@ -26,8 +26,11 @@ public class KafkaService {
 	@Autowired
 	private KafkaTemplate<String, NotificationResponseDTO> kafkaTemplate;
 	
-	@Value("${kafka.response.topic}")
-	private String RESPONSE_TOPIC;
+	@Value("${kafka.response.payment.topic}")
+	private String PAYMENT_RESPONSE_TOPIC;
+	
+	@Value("${kafka.response.order.topic}")
+	private String ORDER_RESPONSE_TOPIC;
 	
 	@KafkaListener(topics = "${kafka.request.payment.topic}")
     public void consumePayment(NotificationPaymentDTO request) {
