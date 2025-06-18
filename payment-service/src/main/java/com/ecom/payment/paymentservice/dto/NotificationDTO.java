@@ -1,11 +1,13 @@
 package com.ecom.payment.paymentservice.dto;
 
+import com.ecom.payment.paymentservice.enums.PaymentStatus;
+
 public class NotificationDTO {
     private String userEmail;
     private Long paymentId;
-    private String status;
+    private PaymentStatus status;
 
-    public NotificationDTO(String userEmail, Long paymentId, String status) {
+    public NotificationDTO(String userEmail, Long paymentId, PaymentStatus status) {
         this.userEmail = userEmail;
         this.paymentId = paymentId;
         this.status = status;
@@ -27,11 +29,11 @@ public class NotificationDTO {
         this.paymentId = paymentId;
     }
 
-    public String getStatus() {
+    public PaymentStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(PaymentStatus status) {
         this.status = status;
     }
 }
