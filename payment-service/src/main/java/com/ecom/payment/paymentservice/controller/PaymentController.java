@@ -37,13 +37,10 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getPaymentStatus(@PathVariable Long id) {
+    public ResponseEntity<PaymentResponseDTO> getPaymentStatus(@PathVariable Long id) {
         log.info("Fetching payment status for ID: {}", id);
 
-        PaymentStatus status = paymentService.getPaymentById(id).getStatus();
-        log.info("Payment status fetched: ID = {}, status = {}", id, status);
-
-        return ResponseEntity.ok(status.toString());
+        return ResponseEntity.ok(paymentService.getPaymentById(id));
     }
 
     @GetMapping("/order/{orderId}")

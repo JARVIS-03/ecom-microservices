@@ -16,6 +16,7 @@ public enum ErrorCode {
     PAYMENT_SERVICE_UNAVAILABLE("error.payment.serviceunavailable", HttpStatus.SERVICE_UNAVAILABLE),
     PAYMENT_DUPLICATE_REQUEST("error.payment.duplicate", HttpStatus.CONFLICT),
     PAYMENT_UNSUPPORTED_METHOD("error.payment.unsupportedmethod", HttpStatus.BAD_REQUEST),
+    PAYMENT_RETRY_FAILED("error.payment.retryfailed", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // Credit Card Validation Errors
     CREDITCARD_NUMBER_INVALID("error.payment.creditcard.number.invalid", HttpStatus.BAD_REQUEST),
@@ -37,7 +38,12 @@ public enum ErrorCode {
     // Payment Method Unsupported
     PAYMENT_METHOD_UNSUPPORTED("error.payment.method.unsupported", HttpStatus.BAD_REQUEST),
     // Payment Invalid Status
-   PAYMENT_INVALID_STATUS("error.payment.invalid.status", HttpStatus.BAD_REQUEST);
+   PAYMENT_INVALID_STATUS("error.payment.invalid.status", HttpStatus.BAD_REQUEST),
+
+    //Order Not Found
+    ORDER_NOT_FOUND("error.payment.order.notfound", HttpStatus.BAD_REQUEST);
+
+
     private final String key;
     private final HttpStatus httpStatus;
 

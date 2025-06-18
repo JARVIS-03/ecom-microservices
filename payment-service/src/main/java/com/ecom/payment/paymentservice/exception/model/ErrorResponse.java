@@ -1,5 +1,7 @@
 package com.ecom.payment.paymentservice.exception.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.time.LocalDateTime;
 
 public class ErrorResponse {
@@ -7,6 +9,7 @@ public class ErrorResponse {
     private int httpStatus;
     private int errorCode;
     private String message;
+//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
 
