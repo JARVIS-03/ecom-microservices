@@ -12,6 +12,7 @@ public class PaymentResponseDTO {
     private String paymentMethod;
     private LocalDateTime date;
     private PaymentMethodDetails methodDetails;
+    private String email;
 
     public Long getPaymentId() {
         return paymentId;
@@ -51,6 +52,14 @@ public class PaymentResponseDTO {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public PaymentMethodDetails getMethodDetails() {

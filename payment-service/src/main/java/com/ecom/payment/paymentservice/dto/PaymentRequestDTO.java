@@ -1,5 +1,6 @@
 package com.ecom.payment.paymentservice.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -21,6 +22,11 @@ public class PaymentRequestDTO {
     @NotNull(message = "Method details must not be null")
     private PaymentMethodDetails methodDetails;
 
+    @NotBlank(message = "Email must not be blank")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    // Getters and setters
     public Long getOrderId() {
         return orderId;
     }
@@ -51,5 +57,13 @@ public class PaymentRequestDTO {
 
     public void setMethodDetails(PaymentMethodDetails methodDetails) {
         this.methodDetails = methodDetails;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

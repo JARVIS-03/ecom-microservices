@@ -6,6 +6,9 @@ import com.ecom.payment.paymentservice.enums.PaymentStatus;
 import com.ecom.payment.paymentservice.service.PaymentService;
 import com.ecom.payment.paymentservice.validator.RequestValidator;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,20 +18,23 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/payments")
+//@Slf4j
 public class PaymentController {
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PaymentController.class);
 
+    private static final Logger log = LoggerFactory.getLogger(PaymentController.class);
     @Autowired
     private PaymentService paymentService;
 
 
     @PostMapping("/initiate")
-    public ResponseEntity<PaymentResponseDTO> initiate(@Valid @RequestBody PaymentRequestDTO request) {
-            RequestValidator.validatePaymentDetails(request);
-            log.info("Initiating payment with payload: {}", request);
-            return ResponseEntity.ok(paymentService.initiatePayment(request));
-    }
+    public ResponseEntity<PaymentResponseDTO> initiatePayment(@Valid @RequestBody PaymentRequestDTO request) {
+        log.info("Received payment initiation request: orderId = {}, method = {}", request.getOrderId(), request.getPaymentMethod());
+        RequestValidator.validatePaymentDetails(request);
 
+        PaymentResponseDTO response = paymentService.initiatePayment(request);
+        log.info("Payment initiated successfully: paymentId = {}, status = {}", response.getPaymentId(), response.getStatus());
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<String> getPaymentStatus(@PathVariable Long id) {
@@ -41,8 +47,14 @@ public class PaymentController {
     }
 
     @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<PaymentResponseDTO>> getByOrderId(@PathVariable Long orderId) {
-        return new ResponseEntity<>(paymentService.getPaymentsByOrderId(orderId), HttpStatus.OK);
+    public ResponseEntity<List<PaymentResponseDTO>> getPaymentsByOrderId(@PathVariable Long orderId) {
+        log.info("Fetching payments for order ID: {}", orderId);
+//        RequestValidator.validateRequestParam(orderId);
+
+        List<PaymentResponseDTO> listOfAllPayments = paymentService.getPaymentsByOrderId(orderId);
+        log.info("Payments fetched for order ID {}: count = {}", orderId, listOfAllPayments.size());
+
+        return ResponseEntity.ok(listOfAllPayments);
     }
 
     @PutMapping("/{id}/{status}")

@@ -4,14 +4,13 @@ import com.ecom_microservices.order_service.dto.request.OrderRequest;
 import com.ecom_microservices.order_service.dto.response.OrderResponse;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface OrderService {
     OrderResponse createOrder(OrderRequest orderRequest);
     List<OrderResponse> getAllOrders();
-    OrderResponse getOrder(UUID orderId);
-    List<OrderResponse> getOrderByCustomerId(UUID customerId);
-    OrderResponse updateOrder(UUID orderId,OrderRequest orderRequest);
-    void deleteOrder(UUID orderId);
-    OrderResponse cancelOrder(UUID orderId);
+    OrderResponse getOrder(long orderId);
+    List<OrderResponse> getOrderByCustomerId(long customerId);
+    OrderResponse updateOrder(long orderId,OrderRequest orderRequest);
+    void deleteOrder(long orderId);
+    OrderResponse cancelOrder(long orderId);
 }
