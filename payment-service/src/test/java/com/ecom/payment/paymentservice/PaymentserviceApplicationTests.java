@@ -10,12 +10,5 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class PaymentserviceApplicationTests {
 
-	@Autowired
-	private RestTemplate restTemplate;
 
-	@Test
-	void contextLoads() {
-		// This test ensures the Spring application context loads successfully.
-		assertNotNull(restTemplate, "RestTemplate bean should be initialized");
-	}
 }

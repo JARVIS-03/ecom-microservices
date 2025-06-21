@@ -59,9 +59,10 @@ public class Notification {
     @Column(name = "notification_type", nullable = false)
     private NotificationType type = NotificationType.EMAIL;
 
-    //@Future(message = "Scheduled time must be in the future")
+    @Future(message = "Scheduled time must be in the future")
     @Column(name = "scheduled_time")
     private LocalDateTime scheduledTime;
+    
 
     @Column(name = "created_timestamp", nullable = false, updatable = false)
     private LocalDateTime createdTimestamp;
@@ -70,13 +71,13 @@ public class Notification {
     private LocalDateTime updatedTimestamp;
 
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         createdTimestamp = LocalDateTime.now();
         updatedTimestamp = createdTimestamp;
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void onUpdate() {
         updatedTimestamp = LocalDateTime.now();
     }
 }

@@ -2,6 +2,7 @@ package com.ecom_microservices.order_service.service.impl;
 
 import com.ecom_microservices.order_service.dto.request.NotificationRequest;
 import com.ecom_microservices.order_service.dto.request.OrderRequest;
+import com.ecom_microservices.order_service.dto.request.PaymentRequest;
 import com.ecom_microservices.order_service.dto.response.OrderResponse;
 import com.ecom_microservices.order_service.dto.response.ProductResponse;
 import com.ecom_microservices.order_service.entity.Order;
@@ -57,6 +58,10 @@ public class OrderServiceImpl implements OrderService {
 
         Order savedOrder=orderRepository.save(order);
         sendNotification(savedOrder);
+
+        Order saveOrder=orderRepository.save(order);
+        sendPaymentNotification(saveOrder);
+
         log.debug("Order saved: {}", savedOrder.getId());
         return modelMapper.map(savedOrder,OrderResponse.class);
     }
@@ -146,6 +151,20 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(cancelledOrder,OrderResponse.class);
     }
 
+    @Override
+    @Transactional
+    @Retryable(
+            value = { RuntimeException.class },
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 2000))
+    public OrderResponse updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+
+        order.setStatus(status);
+        return modelMapper.map(orderRepository.save(order),OrderResponse.class);
+    }
+
     private void validateProduct(String productId)
     {
         String productServiceUrl = "http://PRODUCT-SERVICE/api/products/" + productId;
@@ -160,7 +179,7 @@ public class OrderServiceImpl implements OrderService {
     private void sendNotification(Order savedOrder) {
         NotificationRequest notificationRequest=NotificationRequest.builder()
                 .orderId(savedOrder.getId())
-                .userEmail("abc@gmail.com")
+                .userEmail("2002mohan@gmail.com")
                 .status(savedOrder.getOrderStatus())
                 .build();
         try {
@@ -175,6 +194,28 @@ public class OrderServiceImpl implements OrderService {
             log.error("Failed to send notification: {}", e.getMessage());
         }
     }
+
+    private void sendPaymentNotification(Order savedOrder) {
+        PaymentRequest paymentRequest=PaymentRequest.builder()
+                .orderId(savedOrder.getId())
+                .paymentMethod("CREDIT_CARD")
+                .amount(savedOrder.getTotalAmount())
+
+                .build();
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<PaymentRequest> request = new HttpEntity<>(paymentRequest, headers);
+
+            restTemplate.postForLocation("http://PAYMENTSERVICE/api/payments/initiate", request, savedOrder.getId());
+            log.info("Payment sent successfully.");
+        } catch (Exception e) {
+            log.error("Failed to send Payment: {}", e.getMessage());
+        }
+    }
+
+
 
     private long calculateTotalAmount(List<OrderItem> orderItems)
     {

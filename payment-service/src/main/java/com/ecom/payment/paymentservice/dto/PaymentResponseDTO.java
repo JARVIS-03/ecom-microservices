@@ -1,15 +1,18 @@
 package com.ecom.payment.paymentservice.dto;
 
+import com.ecom.payment.paymentservice.enums.PaymentStatus;
+
 import java.time.LocalDateTime;
 
 public class PaymentResponseDTO {
     private Long paymentId;
     private Long orderId;
     private Double amount;
-    private String status;
+    private PaymentStatus status;
     private String paymentMethod;
     private LocalDateTime date;
     private PaymentMethodDetails methodDetails;
+    private String email;
 
     public Long getPaymentId() {
         return paymentId;
@@ -35,14 +38,6 @@ public class PaymentResponseDTO {
         this.amount = amount;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getPaymentMethod() {
         return paymentMethod;
     }
@@ -59,11 +54,27 @@ public class PaymentResponseDTO {
         this.date = date;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public PaymentMethodDetails getMethodDetails() {
         return methodDetails;
     }
 
     public void setMethodDetails(PaymentMethodDetails methodDetails) {
         this.methodDetails = methodDetails;
+    }
+
+    public PaymentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PaymentStatus status) {
+        this.status = status;
     }
 }

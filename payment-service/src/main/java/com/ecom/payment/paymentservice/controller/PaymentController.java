@@ -2,6 +2,7 @@ package com.ecom.payment.paymentservice.controller;
 
 import com.ecom.payment.paymentservice.dto.PaymentRequestDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
+import com.ecom.payment.paymentservice.enums.PaymentStatus;
 import com.ecom.payment.paymentservice.service.PaymentService;
 import com.ecom.payment.paymentservice.validator.RequestValidator;
 import jakarta.validation.Valid;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +27,9 @@ public class PaymentController {
 
 
     @PostMapping("/initiate")
-    public ResponseEntity<PaymentResponseDTO> initiatePayment(@RequestBody PaymentRequestDTO request) {
+    public ResponseEntity<PaymentResponseDTO> initiatePayment(@Valid @RequestBody PaymentRequestDTO request) {
         log.info("Received payment initiation request: orderId = {}, method = {}", request.getOrderId(), request.getPaymentMethod());
-//        RequestValidator.validatePaymentDetails(request);
+        RequestValidator.validatePaymentDetails(request);
 
         PaymentResponseDTO response = paymentService.initiatePayment(request);
         log.info("Payment initiated successfully: paymentId = {}, status = {}", response.getPaymentId(), response.getStatus());
@@ -35,13 +37,10 @@ public class PaymentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getPaymentStatus(@PathVariable Long id) {
+    public ResponseEntity<PaymentResponseDTO> getPaymentStatus(@PathVariable Long id) {
         log.info("Fetching payment status for ID: {}", id);
 
-        String status = paymentService.getPaymentById(id).getStatus();
-        log.info("Payment status fetched: ID = {}, status = {}", id, status);
-
-        return ResponseEntity.ok(status);
+        return ResponseEntity.ok(paymentService.getPaymentById(id));
     }
 
     @GetMapping("/order/{orderId}")
