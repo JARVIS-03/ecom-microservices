@@ -60,6 +60,8 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
+
+
 		<!-- Eureka Client -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
