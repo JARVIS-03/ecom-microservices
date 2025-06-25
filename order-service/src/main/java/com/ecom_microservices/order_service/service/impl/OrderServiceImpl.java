@@ -11,6 +11,7 @@ import com.ecom_microservices.order_service.enums.OrderStatus;
 import com.ecom_microservices.order_service.exception.InvalidOrderStatusException;
 import com.ecom_microservices.order_service.exception.ResourceNotFoundException;
 import com.ecom_microservices.order_service.repository.OrderRepository;
+import com.ecom_microservices.order_service.service.OrderKafkaService;
 import com.ecom_microservices.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,8 @@ public class OrderServiceImpl implements OrderService {
     private final ModelMapper modelMapper;
 
     private final RestTemplate restTemplate;
+
+    private final OrderKafkaService kafkaService;
 
     @Override
     @Transactional
@@ -161,7 +164,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
 
-        order.setStatus(status);
+        order.setOrderStatus(OrderStatus.PROCESSING);
+//        order.setOrderStatus(status);
         return modelMapper.map(orderRepository.save(order),OrderResponse.class);
     }
 
@@ -187,7 +191,7 @@ public class OrderServiceImpl implements OrderService {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<NotificationRequest> request = new HttpEntity<>(notificationRequest, headers);
-
+            kafkaService.sendOrderNotification(notificationRequest);
             restTemplate.postForLocation("http://NOTIFICATION-SERVICE/api/notifications/order/send", request);
             log.info("Notification sent successfully.");
         } catch (Exception e) {
