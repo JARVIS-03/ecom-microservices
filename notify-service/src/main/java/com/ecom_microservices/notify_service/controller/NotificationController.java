@@ -9,8 +9,8 @@ import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.service.NotificationService;
 
 import jakarta.validation.Valid;
-// import org.slf4j.Logger;
-// import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +20,6 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 
@@ -29,8 +27,8 @@ import org.apache.logging.log4j.Logger;
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
-    // private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
-    private static final Logger logger = LogManager.getLogger(NotificationController.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
+
 
     private final NotificationService service;
 
@@ -40,31 +38,31 @@ public class NotificationController {
 
     @PostMapping("/send")
     public ResponseEntity<NotificationResponseDTO> sendNotification(@Valid @RequestBody NotificationRequestDTO requestDTO) {
-    	logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
+        logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
         NotificationResponseDTO responseDTO = service.createNotification(requestDTO);
         logger.info("Notification created successfully with ID {}", responseDTO.getId());
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
-    
+
     @PostMapping("/schedule")
     public ResponseEntity<?> scheduleNotification(@Valid @RequestBody NotificationRequestDTO requestDTO,
-            @RequestParam("datetime") @DateTimeFormat(pattern = "dd-MM-yyyy-HH-mm-ss") LocalDateTime datetime) {
-    	if (datetime.isBefore(LocalDateTime.now())) {
+                                                  @RequestParam("datetime") @DateTimeFormat(pattern = "dd-MM-yyyy-HH-mm-ss") LocalDateTime datetime) {
+        if (datetime.isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body("Scheduled datetime must be in the future.");
         }
-    	logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
+        logger.info("POST /api/notifications/send - Sending notification to '{}'", requestDTO.getRecipient());
         NotificationResponseDTO responseDTO = service.scheduleNotification(requestDTO, datetime);
         logger.info("Notification scheduled successfully with ID {}", responseDTO.getId());
         return ResponseEntity.ok(responseDTO);
     }
-    
+
     @PostMapping("/order/send")
     public ResponseEntity<NotificationResponseDTO> sendOrderStatusNotification(@Valid @RequestBody OrderDTO orderDTO) {
-    	logger.info("POST /api/notifications/order/send - Sending notification to '{}'", orderDTO.getUserEmail());
-    	NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
+        logger.info("POST /api/notifications/order/send - Sending notification to '{}'", orderDTO.getUserEmail());
+        NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
-    
+
     @PostMapping("/payment/send")
     public ResponseEntity<NotificationResponseDTO> sendPaymentStatusNotification(@Valid @RequestBody PaymentDTO paymentDTO) {
         logger.info("POST /api/notifications/payment/send - Sending notification to '{}'", paymentDTO.getUserEmail());
@@ -109,7 +107,7 @@ public class NotificationController {
         logger.info("Returning {} notifications for recipient: {}", dtoList.size(), recipient);
         return ResponseEntity.ok(dtoList);
     }
-    
+
     @GetMapping("/date-range")
     public ResponseEntity<List<NotificationResponseDTO>> getNotificationsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -137,7 +135,5 @@ public class NotificationController {
                 notification.getUpdatedTimestamp()
         );
     }
-    
+
 }
-
-

@@ -55,19 +55,7 @@
             </exclusions>
         </dependency>
 
-        <!-- Log4j2 + SLF4J -->
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-        </dependency>
+
 
         <!-- Splunk Logging -->
         <dependency>
@@ -76,6 +64,10 @@
             <version>1.8.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
         <!-- SLF4J API -->
         <dependency>
             <groupId>org.slf4j</groupId>
