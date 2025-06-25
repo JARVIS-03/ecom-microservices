@@ -400,3 +400,172 @@
 2025-06-25T22:23:00.250+05:30  INFO 7272 --- [order-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : Unregistering ...
 2025-06-25T22:23:00.269+05:30  INFO 7272 --- [order-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_ORDER-SERVICE/Mukesh-Velusamy:order-service:8082 - deregister  status: 200
 2025-06-25T22:23:00.270+05:30  INFO 7272 --- [order-service] [SpringApplicationShutdownHook] com.netflix.discovery.DiscoveryClient    : Completed shut down of DiscoveryClient
+2025-06-25T22:23:09.637+05:30  INFO 1760 --- [order-service] [restartedMain] c.e.o.OrderServiceApplication            : Starting OrderServiceApplication using Java 17.0.12 with PID 1760 (C:\Users\Dell\Desktop\JPMC-POC\ecom-microservices\order-service\target\classes started by Dell in C:\Users\Dell\Desktop\JPMC-POC\ecom-microservices\order-service)
+2025-06-25T22:23:09.640+05:30  INFO 1760 --- [order-service] [restartedMain] c.e.o.OrderServiceApplication            : No active profile set, falling back to 1 default profile: "default"
+2025-06-25T22:23:09.689+05:30  INFO 1760 --- [order-service] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-06-25T22:23:09.690+05:30  INFO 1760 --- [order-service] [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-06-25T22:23:10.506+05:30  INFO 1760 --- [order-service] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-25T22:23:10.657+05:30  INFO 1760 --- [order-service] [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 139 ms. Found 1 JPA repository interface.
+2025-06-25T22:23:10.910+05:30  INFO 1760 --- [order-service] [restartedMain] o.s.cloud.context.scope.GenericScope     : BeanFactory id=01d54788-940c-3be1-b7e5-7e55a44de416
+2025-06-25T22:23:11.304+05:30  INFO 1760 --- [order-service] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+2025-06-25T22:23:11.318+05:30  INFO 1760 --- [order-service] [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-25T22:23:11.320+05:30  INFO 1760 --- [order-service] [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-06-25T22:23:11.368+05:30  INFO 1760 --- [order-service] [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-25T22:23:11.369+05:30  INFO 1760 --- [order-service] [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1677 ms
+2025-06-25T22:23:11.523+05:30  INFO 1760 --- [order-service] [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-25T22:23:11.567+05:30  INFO 1760 --- [order-service] [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-06-25T22:23:11.594+05:30  INFO 1760 --- [order-service] [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-25T22:23:11.842+05:30  INFO 1760 --- [order-service] [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-25T22:23:11.874+05:30  INFO 1760 --- [order-service] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-06-25T22:23:12.132+05:30  INFO 1760 --- [order-service] [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3326adff
+2025-06-25T22:23:12.135+05:30  INFO 1760 --- [order-service] [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-25T22:23:12.166+05:30  WARN 1760 --- [order-service] [restartedMain] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-25T22:23:12.185+05:30  INFO 1760 --- [order-service] [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.5
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-06-25T22:23:12.962+05:30  INFO 1760 --- [order-service] [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-25T22:23:13.017+05:30  INFO 1760 --- [order-service] [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-25T22:23:13.579+05:30  WARN 1760 --- [order-service] [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-25T22:23:13.635+05:30  INFO 1760 --- [order-service] [restartedMain] o.s.v.b.OptionalValidatorFactoryBean     : Failed to set up a Bean Validation provider: jakarta.validation.NoProviderFoundException: Unable to create a Configuration, because no Jakarta Bean Validation provider could be found. Add a provider like Hibernate Validator (RI) to your classpath.
+2025-06-25T22:23:13.980+05:30  WARN 1760 --- [order-service] [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : Unable to start LiveReload server
+2025-06-25T22:23:14.107+05:30  INFO 1760 --- [order-service] [restartedMain] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2025-06-25T22:23:14.150+05:30  WARN 1760 --- [order-service] [restartedMain] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2025-06-25T22:23:14.178+05:30  INFO 1760 --- [order-service] [restartedMain] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2025-06-25T22:23:14.207+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2025-06-25T22:23:14.211+05:30  INFO 1760 --- [order-service] [restartedMain] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-06-25T22:23:14.221+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2025-06-25T22:23:14.222+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2025-06-25T22:23:14.222+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2025-06-25T22:23:14.223+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2025-06-25T22:23:14.223+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2025-06-25T22:23:14.223+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2025-06-25T22:23:14.224+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2025-06-25T22:23:14.562+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2025-06-25T22:23:14.564+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2025-06-25T22:23:14.566+05:30  INFO 1760 --- [order-service] [restartedMain] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2025-06-25T22:23:14.569+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1750870394568 with initial instances count: 3
+2025-06-25T22:23:14.574+05:30  INFO 1760 --- [order-service] [restartedMain] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application ORDER-SERVICE with eureka with status UP
+2025-06-25T22:23:14.576+05:30  INFO 1760 --- [order-service] [restartedMain] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1750870394576, current=UP, previous=STARTING]
+2025-06-25T22:23:14.578+05:30  INFO 1760 --- [order-service] [DiscoveryClient-InstanceInfoReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_ORDER-SERVICE/Mukesh-Velusamy:order-service:8082: registering service...
+2025-06-25T22:23:14.603+05:30  INFO 1760 --- [order-service] [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8082 (http) with context path '/'
+2025-06-25T22:23:14.605+05:30  INFO 1760 --- [order-service] [restartedMain] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8082
+2025-06-25T22:23:14.629+05:30  INFO 1760 --- [order-service] [DiscoveryClient-InstanceInfoReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_ORDER-SERVICE/Mukesh-Velusamy:order-service:8082 - registration status: 204
+2025-06-25T22:23:14.668+05:30  INFO 1760 --- [order-service] [restartedMain] c.e.o.OrderServiceApplication            : Started OrderServiceApplication in 5.583 seconds (process running for 6.464)
+2025-06-25T22:23:29.209+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-25T22:23:29.210+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-06-25T22:23:29.212+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-06-25T22:23:29.281+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] c.e.o.controller.OrderController         : Received request to create order for customer: 3
+2025-06-25T22:23:29.290+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] c.e.o.service.impl.OrderServiceImpl      : Creating a new order for customer: 3
+2025-06-25T22:23:29.600+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.k.clients.producer.ProducerConfig    : ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 16384
+	bootstrap.servers = [localhost:9092]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = order-service-producer-1
+	compression.gzip.level = -1
+	compression.lz4.level = 9
+	compression.type = none
+	compression.zstd.level = 3
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 120000
+	enable.idempotence = true
+	enable.metrics.push = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+	linger.ms = 0
+	max.block.ms = 60000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.adaptive.partitioning.enable = true
+	partitioner.availability.timeout.ms = 0
+	partitioner.class = null
+	partitioner.ignore.keys = false
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class org.springframework.kafka.support.serializer.JsonSerializer
+
+2025-06-25T22:23:29.678+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-06-25T22:23:29.753+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.k.clients.producer.KafkaProducer     : [Producer clientId=order-service-producer-1] Instantiated an idempotent producer.
+2025-06-25T22:23:29.804+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.k.clients.producer.ProducerConfig    : These configurations '[spring.json.trusted.packages]' were supplied but are not used yet.
+2025-06-25T22:23:29.805+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-06-25T22:23:29.806+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-06-25T22:23:29.806+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1750870409804
+2025-06-25T22:23:30.137+05:30  INFO 1760 --- [order-service] [kafka-producer-network-thread | order-service-producer-1] org.apache.kafka.clients.Metadata        : [Producer clientId=order-service-producer-1] Cluster ID: W6W0_kFiSHubhv9wM-e0pg
+2025-06-25T22:23:30.140+05:30  INFO 1760 --- [order-service] [kafka-producer-network-thread | order-service-producer-1] o.a.k.c.p.internals.TransactionManager   : [Producer clientId=order-service-producer-1] ProducerId set to 1005 with epoch 0
+2025-06-25T22:23:30.158+05:30  INFO 1760 --- [order-service] [http-nio-8082-exec-3] c.e.o.service.impl.OrderServiceImpl      : Notification sent successfully.
+2025-06-25T22:23:30.204+05:30  WARN 1760 --- [order-service] [http-nio-8082-exec-3] o.s.c.l.core.RoundRobinLoadBalancer      : No servers available for service: PAYMENTSERVICE
+2025-06-25T22:23:30.207+05:30 ERROR 1760 --- [order-service] [http-nio-8082-exec-3] c.e.o.service.impl.OrderServiceImpl      : Failed to send Payment: Service Instance cannot be null, serviceId: PAYMENTSERVICE
