@@ -9,8 +9,8 @@ import com.ecom_microservices.notify_service.model.Notification;
 import com.ecom_microservices.notify_service.service.NotificationService;
 
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+// import org.slf4j.Logger;
+// import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +20,17 @@ import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
+
 
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
-    private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
+    // private static final Logger logger = LoggerFactory.getLogger(NotificationController.class);
+    private static final Logger logger = LogManager.getLogger(NotificationController.class);
 
     private final NotificationService service;
 
