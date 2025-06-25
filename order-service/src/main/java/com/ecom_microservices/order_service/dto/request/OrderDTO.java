@@ -9,14 +9,18 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NotificationRequest {
+public class OrderDTO {
+
     private long orderId;
+
+    @Email
+    @NotBlank(message = "user email can not be blank")
     private String userEmail;
+
     private OrderStatus status;
+
 }

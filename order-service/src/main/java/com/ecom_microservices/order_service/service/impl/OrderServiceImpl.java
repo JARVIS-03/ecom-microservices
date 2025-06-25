@@ -1,6 +1,6 @@
 package com.ecom_microservices.order_service.service.impl;
 
-import com.ecom_microservices.order_service.dto.request.NotificationRequest;
+import com.ecom_microservices.order_service.dto.request.OrderDTO;
 import com.ecom_microservices.order_service.dto.request.OrderRequest;
 import com.ecom_microservices.order_service.dto.request.PaymentRequest;
 import com.ecom_microservices.order_service.dto.response.OrderResponse;
@@ -13,6 +13,8 @@ import com.ecom_microservices.order_service.exception.ResourceNotFoundException;
 import com.ecom_microservices.order_service.repository.OrderRepository;
 import com.ecom_microservices.order_service.service.OrderKafkaService;
 import com.ecom_microservices.order_service.service.OrderService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -41,6 +43,8 @@ public class OrderServiceImpl implements OrderService {
     private final RestTemplate restTemplate;
 
     private final OrderKafkaService kafkaService;
+
+     private final ObjectMapper objectMapper; 
 
     @Override
     @Transactional
@@ -180,19 +184,21 @@ public class OrderServiceImpl implements OrderService {
                 log.debug("Product ID {} is valid", productId);
     }
 
-    private void sendNotification(Order savedOrder) {
-        NotificationRequest notificationRequest=NotificationRequest.builder()
+   private void sendNotification(Order savedOrder) {
+        OrderDTO orderDTO=OrderDTO.builder()
                 .orderId(savedOrder.getId())
-                .userEmail("2002mohan@gmail.com")
+                .userEmail("shankarmuthamil@gmail.com")
                 .status(savedOrder.getOrderStatus())
                 .build();
         try {
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<NotificationRequest> request = new HttpEntity<>(notificationRequest, headers);
-            kafkaService.sendOrderNotification(notificationRequest);
-            restTemplate.postForLocation("http://NOTIFICATION-SERVICE/api/notifications/order/send", request);
+            String json = objectMapper.writeValueAsString(orderDTO);
+            HttpEntity<OrderDTO> request = new HttpEntity<>(orderDTO, headers);
+            kafkaService.sendOrderNotification(orderDTO);
+            System.out.println("Serialized JSON: " + json);
+//            restTemplate.postForLocation("http://NOTIFICATION-SERVICE/api/notifications/order/send", request);
             log.info("Notification sent successfully.");
         } catch (Exception e) {
             log.error("Failed to send notification: {}", e.getMessage());
