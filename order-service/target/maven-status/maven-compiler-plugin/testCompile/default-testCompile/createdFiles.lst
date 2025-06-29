@@ -1,0 +1,3 @@
+com\ecom_microservices\order_service\controller\OrderControllerTest.class
+com\ecom_microservices\order_service\OrderServiceApplicationTests.class
+com\ecom_microservices\order_service\service\impl\OrderServiceImplTest.class

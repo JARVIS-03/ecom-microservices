@@ -1,6 +1,6 @@
 package com.ecom.payment.paymentservice.service;
 
-import com.ecom.payment.paymentservice.dto.NotificationDTO;
+import com.ecom.payment.paymentservice.dto.NotificationPaymentDTO;
 import com.ecom.payment.paymentservice.dto.PaymentResponseDTO;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
 
 @Service
 //@RequiredArgsConstructor
@@ -36,18 +37,17 @@ public class NotificationServiceClient {
 //        throw new RuntimeException("NotificationService is down. Unable to notify " + email);
 //    }
 
-    private final KafkaTemplate<String, NotificationDTO> kafkaTemplate;
+    private final KafkaTemplate<String, NotificationPaymentDTO> kafkaTemplate;
     private final String topicName;
 
-    public NotificationServiceClient(KafkaTemplate<String, NotificationDTO> kafkaTemplate,
+    public NotificationServiceClient(KafkaTemplate<String, NotificationPaymentDTO> kafkaTemplate,
                                      @Value("${notification.topic.name}") String topicName) {
         this.kafkaTemplate = kafkaTemplate;
         this.topicName = topicName;
     }
 
     public void sendNotification(PaymentResponseDTO response) {
-        NotificationDTO dto = new NotificationDTO(response.getEmail(), response.getPaymentId(), response.getStatus());
-
+        NotificationPaymentDTO dto = new NotificationPaymentDTO(response.getEmail(), response.getPaymentId(), response.getStatus());
         kafkaTemplate.send(topicName, dto);
         log.info("Notification event sent to Kafka for user: {}", response.getEmail());
     }

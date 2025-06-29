@@ -2,7 +2,7 @@ package com.ecom_microservices.notify_service.controller;
 
 import com.ecom_microservices.notify_service.dto.NotificationRequestDTO;
 import com.ecom_microservices.notify_service.dto.NotificationResponseDTO;
-import com.ecom_microservices.notify_service.dto.OrderDTO;
+import com.ecom_microservices.notify_service.dto.NotificationOrderDTO;
 import com.ecom_microservices.notify_service.dto.PaymentDTO;
 import com.ecom_microservices.notify_service.enums.NotificationStatus;
 import com.ecom_microservices.notify_service.model.Notification;
@@ -57,18 +57,18 @@ public class NotificationController {
     }
 
     @PostMapping("/order/send")
-    public ResponseEntity<NotificationResponseDTO> sendOrderStatusNotification(@Valid @RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<NotificationResponseDTO> sendOrderStatusNotification(@Valid @RequestBody NotificationOrderDTO orderDTO) {
         logger.info("POST /api/notifications/order/send - Sending notification to '{}'", orderDTO.getUserEmail());
         NotificationResponseDTO responseDTO = service.createOrderStatusNotification(orderDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
-    @PostMapping("/payment/send")
-    public ResponseEntity<NotificationResponseDTO> sendPaymentStatusNotification(@Valid @RequestBody PaymentDTO paymentDTO) {
-        logger.info("POST /api/notifications/payment/send - Sending notification to '{}'", paymentDTO.getUserEmail());
-        NotificationResponseDTO response = service.createPaymentStatusNotification(paymentDTO);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+    // @PostMapping("/payment/send")
+    // public ResponseEntity<NotificationResponseDTO> sendPaymentStatusNotification(@Valid @RequestBody PaymentDTO paymentDTO) {
+    //     logger.info("POST /api/notifications/payment/send - Sending notification to '{}'", paymentDTO.getUserEmail());
+    //     NotificationResponseDTO response = service.createPaymentStatusNotification(paymentDTO);
+    //     return new ResponseEntity<>(response, HttpStatus.CREATED);
+    // }
 
     @GetMapping("/{id}/status")
     public ResponseEntity<String> getNotificationStatusById(@PathVariable Long id) {

@@ -2,12 +2,12 @@ package com.ecom.payment.paymentservice.dto;
 
 import com.ecom.payment.paymentservice.enums.PaymentStatus;
 
-public class NotificationDTO {
+public class NotificationPaymentDTO {
     private String userEmail;
     private Long paymentId;
     private PaymentStatus status;
 
-    public NotificationDTO(String userEmail, Long paymentId, PaymentStatus status) {
+    public NotificationPaymentDTO(String userEmail, Long paymentId, PaymentStatus status) {
         this.userEmail = userEmail;
         this.paymentId = paymentId;
         this.status = status;

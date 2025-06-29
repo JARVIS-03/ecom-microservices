@@ -32,7 +32,7 @@ public class PaymentClient {
                 .orderId(savedOrder.getId())
                 .paymentMethod("CREDIT_CARD")
                 .amount(savedOrder.getTotalAmount())
-                .email("mohan@gmail.com")
+                .email("mukeshmukey6353@gmail.com")
                 .methodDetails(creditCardDTO)
                 .build();
         try {

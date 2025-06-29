@@ -6,19 +6,12 @@ import lombok.NoArgsConstructor;
 
 import com.ecom_microservices.notify_service.enums.OrderStatus;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderDTO {
-    
+public class NotificationOrderDTO {
 	private long orderId;
-    
-	@Email
-    @NotBlank(message = "user email can not be blank")
     private String userEmail;
-    
 	private OrderStatus status;
 }
