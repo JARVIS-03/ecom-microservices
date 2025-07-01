@@ -17,15 +17,15 @@ public class KafkaService {
     @Autowired
     private NotificationService notificationService;
 
-    @KafkaListener(topics = "${kafka.request.order.topic}", groupId = "group-id", containerFactory = "orderKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.request.order.topic}", groupId = "order-id", containerFactory = "orderKafkaListenerContainerFactory")
     public void consumeOrder(NotificationOrderDTO request) {
         NotificationResponseDTO response = notificationService.createOrderStatusNotification(request);
-        logger.info("Kafka Response prepared: " + response);
+        logger.info("Kafka  Order Response prepared: " + response);
     }
 
-    @KafkaListener(topics = "${kafka.request.payment.topic}", groupId = "group-id", containerFactory = "paymentKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.request.payment.topic}", groupId = "payment-id", containerFactory = "paymentKafkaListenerContainerFactory")
     private void consumePayment(NotificationPaymentDTO request) {
         NotificationResponseDTO response = notificationService.createPaymentStatusNotification(request);
-        logger.info("Kafka Response prepared: "+ response);
+        logger.info("Kafka Payment Response prepared: "+ response);
     }
 }
