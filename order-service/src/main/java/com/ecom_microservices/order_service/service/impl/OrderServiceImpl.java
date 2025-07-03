@@ -1,10 +1,10 @@
 package com.ecom_microservices.order_service.service.impl;
 
-import com.ecom_microservices.order_service.dto.request.NotificationRequest;
+import com.ecom_microservices.order_service.client.NotificationClient;
+import com.ecom_microservices.order_service.client.PaymentClient;
+import com.ecom_microservices.order_service.client.ProductClient;
 import com.ecom_microservices.order_service.dto.request.OrderRequest;
-import com.ecom_microservices.order_service.dto.request.PaymentRequest;
 import com.ecom_microservices.order_service.dto.response.OrderResponse;
-import com.ecom_microservices.order_service.dto.response.ProductResponse;
 import com.ecom_microservices.order_service.entity.Order;
 import com.ecom_microservices.order_service.entity.OrderItem;
 import com.ecom_microservices.order_service.enums.OrderStatus;
@@ -15,18 +15,17 @@ import com.ecom_microservices.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +36,11 @@ public class OrderServiceImpl implements OrderService {
 
     private final ModelMapper modelMapper;
 
-    private final RestTemplate restTemplate;
+    private final ProductClient productClient;
+
+    private final NotificationClient notificationClient;
+
+    private final PaymentClient paymentClient;
 
     @Override
     @Transactional
@@ -49,18 +52,16 @@ public class OrderServiceImpl implements OrderService {
         log.info("Creating a new order for customer: {}", orderRequest.getCustomerIdentifier());
 
         for(OrderItem orderItems:orderRequest.getOrderItems())
-            validateProduct(orderItems.getProductId());
+            productClient.validateProduct(orderItems.getProductId());
 
         Order order = modelMapper.map(orderRequest, Order.class);
-        order.setTotalQuantity(calculateTotalQuantity(orderRequest.getOrderItems()));
-        order.setTotalAmount(calculateTotalAmount(orderRequest.getOrderItems()));
-        order.setOrderStatus(OrderStatus.PROCESSING);
+        order.setTotalQuantity(productClient.calculateTotalQuantity(orderRequest.getOrderItems()));
+        order.setTotalAmount(productClient.calculateTotalAmount(orderRequest.getOrderItems()));
+        order.setOrderStatus(OrderStatus.NEW);
 
         Order savedOrder=orderRepository.save(order);
-        sendNotification(savedOrder);
-
-        Order saveOrder=orderRepository.save(order);
-        sendPaymentNotification(saveOrder);
+        notificationClient.sendNotification(savedOrder);
+        paymentClient.sendPaymentNotification(savedOrder);
 
         log.debug("Order saved: {}", savedOrder.getId());
         return modelMapper.map(savedOrder,OrderResponse.class);
@@ -105,8 +106,8 @@ public class OrderServiceImpl implements OrderService {
         Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Resource not found"));
 
         order.setOrderItems(orderRequest.getOrderItems());
-        order.setTotalQuantity(calculateTotalQuantity(orderRequest.getOrderItems()));
-        order.setTotalAmount(calculateTotalAmount(orderRequest.getOrderItems()));
+        order.setTotalQuantity(productClient.calculateTotalQuantity(orderRequest.getOrderItems()));
+        order.setTotalAmount(productClient.calculateTotalAmount(orderRequest.getOrderItems()));
         order.setUpdatedAt(LocalDateTime.now());
 
         Order updatedOrder = orderRepository.save(order);
@@ -139,7 +140,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse cancelOrder(long orderId) {
         log.info("Cancelling order with ID: {}", orderId);
         Order order=orderRepository.findById(orderId).orElseThrow(()->new ResourceNotFoundException("Resource not found"));
-        if(order.getOrderStatus().equals(OrderStatus.PROCESSING))
+        if(order.getOrderStatus().equals(OrderStatus.NEW) || order.getOrderStatus().equals(OrderStatus.PROCESSING))
             order.setOrderStatus(OrderStatus.CANCELLED);
         else {
             log.warn("Cannot cancel order {} with status {}", orderId, order.getOrderStatus());
@@ -160,74 +161,35 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse updateOrderStatus(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+        if (status.equals("SUCCESS")) {
+            order.setOrderStatus(OrderStatus.PROCESSING);
+            order.setUpdatedAt(LocalDateTime.now());
+            orderRepository.save(order);
+            System.out.println(status);
 
-        order.setStatus(status);
-        return modelMapper.map(orderRepository.save(order),OrderResponse.class);
-    }
+//             Schedule update to DELIVERED after 5 seconds
+            ScheduledExecutorService shippingScheduler = Executors.newSingleThreadScheduledExecutor();
+            shippingScheduler.schedule(() -> {
+                order.setOrderStatus(OrderStatus.SHIPPED);
+                order.setUpdatedAt(LocalDateTime.now());
+                order.setShippedAt(LocalDateTime.now());
+                orderRepository.save(order);
+            }, 1, TimeUnit.DAYS);
 
-    private void validateProduct(String productId)
-    {
-        String productServiceUrl = "http://PRODUCT-SERVICE/api/products/" + productId;
+            ScheduledExecutorService deliveryScheduler = Executors.newSingleThreadScheduledExecutor();
+            deliveryScheduler.schedule(() -> {
+                order.setOrderStatus(OrderStatus.DELIVERED);
+                order.setUpdatedAt(LocalDateTime.now());
+                order.setDeliveredAt(LocalDateTime.now());
+                orderRepository.save(order);
+            }, 3, TimeUnit.DAYS);
 
-            ProductResponse productResponse=restTemplate.getForObject(productServiceUrl, ProductResponse.class);
-            if (productResponse.getName().equals("Unavailable"))
-                throw new ResourceNotFoundException("Product not found");
-            else
-                log.debug("Product ID {} is valid", productId);
-    }
-
-    private void sendNotification(Order savedOrder) {
-        NotificationRequest notificationRequest=NotificationRequest.builder()
-                .orderId(savedOrder.getId())
-                .userEmail("2002mohan@gmail.com")
-                .status(savedOrder.getOrderStatus())
-                .build();
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<NotificationRequest> request = new HttpEntity<>(notificationRequest, headers);
-
-            restTemplate.postForLocation("http://NOTIFICATION-SERVICE/api/notifications/order/send", request);
-            log.info("Notification sent successfully.");
-        } catch (Exception e) {
-            log.error("Failed to send notification: {}", e.getMessage());
         }
-    }
-
-    private void sendPaymentNotification(Order savedOrder) {
-        PaymentRequest paymentRequest=PaymentRequest.builder()
-                .orderId(savedOrder.getId())
-                .paymentMethod("CREDIT_CARD")
-                .amount(savedOrder.getTotalAmount())
-
-                .build();
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<PaymentRequest> request = new HttpEntity<>(paymentRequest, headers);
-
-            restTemplate.postForLocation("http://PAYMENTSERVICE/api/payments/initiate", request, savedOrder.getId());
-            log.info("Payment sent successfully.");
-        } catch (Exception e) {
-            log.error("Failed to send Payment: {}", e.getMessage());
+        else if (status.equals("FAILED") || status.equalsIgnoreCase("REFUNDED")) {
+            order.setOrderStatus(OrderStatus.CANCELLED);
+            order.setUpdatedAt(LocalDateTime.now());
+            orderRepository.save(order);
         }
-    }
-
-
-
-    private long calculateTotalAmount(List<OrderItem> orderItems)
-    {
-        if(orderItems.isEmpty())
-            throw new NullPointerException("Order items are Empty");
-        return orderItems.stream().mapToLong(item -> (long) item.getProductPrice() * item.getQuantity()).sum();
-    }
-
-    private int calculateTotalQuantity(List<OrderItem> orderItems)
-    {
-        if(orderItems.isEmpty())
-            throw new NullPointerException("Order items are is Empty");
-        return orderItems.stream().mapToInt(OrderItem::getQuantity).sum();
+        return modelMapper.map(order,OrderResponse.class);
     }
 }

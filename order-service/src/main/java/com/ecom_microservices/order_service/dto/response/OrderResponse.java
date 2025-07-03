@@ -21,4 +21,6 @@ public class OrderResponse {
     private OrderStatus orderStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime shippedAt;
+    private LocalDateTime deliveredAt;
 }

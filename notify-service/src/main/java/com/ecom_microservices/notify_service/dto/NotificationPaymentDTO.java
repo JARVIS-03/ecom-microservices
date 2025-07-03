@@ -1,10 +1,7 @@
 package com.ecom_microservices.notify_service.dto;
 
-import java.time.LocalDateTime;
 
-import org.springframework.http.HttpStatus;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ecom_microservices.notify_service.enums.PaymentStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +15,6 @@ import lombok.NoArgsConstructor;
 public class NotificationPaymentDTO {
     private String userEmail;
     private Long paymentId;
-    private String status;
+    private PaymentStatus status;
     
 }

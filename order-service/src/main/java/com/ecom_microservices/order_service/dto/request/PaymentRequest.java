@@ -14,5 +14,7 @@ public class PaymentRequest {
     private long orderId;
     private long amount;
     private String paymentMethod;
+    private String email;
+    private CreditCardDTO methodDetails;
 }
 
