@@ -96,7 +96,7 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentResponseDTO response = updatePaymentStatus(payment.getPaymentId(), result);
         log.info("Final payment response after status update: {}", response);
 
-        notificationServiceClient.sendNotification(response); // Provide email as needed
+//        notificationServiceClient.sendNotification(response); // Provide email as needed
 
         return response;
     }
